@@ -378,6 +378,19 @@ if (!window.native) {
       await sendNodeSettings('settings')
     },
     cachedTorrents: async () => await (await torrent).cached(),
+    getDisplays: async cb => await (await torrent).chromecasts.listen(proxy(cb)),
+    castPlay: async (host, hash, id, media) => await (await torrent).chromecasts.play(host, hash, id, media),
+    castClose: async (host) => await (await torrent).chromecasts.close(host),
+    enableCORS: async (urls) => {
+      try {
+        if (Capacitor.isPluginAvailable('CorsProxy')) {
+          // @ts-expect-error plugin is native-only
+          await Capacitor.Plugins.CorsProxy.enableCORS({ urls })
+        }
+      } catch (error) {
+        console.error('Failed to enable CORS proxy', error)
+      }
+    },
     isApp: true,
     spawnPlayer: async (url) => {
       let notiPermission = await ForegroundService.checkPermissions()

@@ -91,7 +91,6 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- Required to keep the app running in the background without any ressource limitations -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 </manifest>

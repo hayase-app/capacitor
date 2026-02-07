@@ -1,11 +1,17 @@
 package app.hayase;
 
 import android.app.Dialog;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
+import android.webkit.ValueCallback;
+import android.webkit.DownloadListener;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -40,6 +46,26 @@ import java.util.Map;
 public class MainActivity extends BridgeActivity {
   private final Map<WebView, Dialog> popupDialogs = new HashMap<>();
   protected RequestQueue queue = null;
+
+  private static final int FILE_CHOOSER_REQUEST_CODE = 61453;
+  private ValueCallback<Uri[]> filePathCallback;
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+
+    if (requestCode != FILE_CHOOSER_REQUEST_CODE) {
+      return;
+    }
+
+    if (filePathCallback == null) {
+      return;
+    }
+
+    Uri[] results = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+    filePathCallback.onReceiveValue(results);
+    filePathCallback = null;
+  }
 
   private void startNodeEngineWithCustomArgs() {
     try {
@@ -94,8 +120,9 @@ public class MainActivity extends BridgeActivity {
   public void onCreate(Bundle savedInstanceState) {
     this.queue = Volley.newRequestQueue(this);
     registerPlugin(MediaNotificationPlugin.class);
-    registerPlugin(EngagePlugin.class);
+    // registerPlugin(EngagePlugin.class);
     registerPlugin(FilesystemPlugin.class);
+    registerPlugin(CorsProxyPlugin.class);
 
     super.onCreate(savedInstanceState);
 
@@ -165,7 +192,9 @@ public class MainActivity extends BridgeActivity {
 
         boolean isAL = urlString.startsWith("https://graphql.anilist.co");
 
-        if (!isMAL && !isAL) {
+        boolean isCorsProxy = CorsProxyPlugin.isCorsEnabled(urlString);
+
+        if (!isMAL && !isAL && !isCorsProxy) {
           return super.shouldInterceptRequest(view, request);
         }
 
@@ -183,12 +212,12 @@ public class MainActivity extends BridgeActivity {
         responseHeaders.put("Access-Control-Allow-Headers", "*");
         responseHeaders.put("Access-Control-Allow-Credentials", "true");
 
-        // Override MAL and AL CORS preflight requests
+        // Override MAL and custom CORS preflight requests
         if (isOptions) {
           return new WebResourceResponse("application/json", "UTF-8", 200, "OK", responseHeaders, null);
         }
 
-        // Rewrite only MAL responses
+        // Rewrite MAL and custom CORS responses
         HttpURLConnection connection = null;
         try {
           String originalUrl = urlString;
@@ -384,6 +413,32 @@ public class MainActivity extends BridgeActivity {
         resultMsg.sendToTarget();
         // We return true to indicate that we have handled the new window creation.
         return true;
+      }
+
+      @Override
+      public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+        // Cancel any previous callback.
+        if (MainActivity.this.filePathCallback != null) {
+          MainActivity.this.filePathCallback.onReceiveValue(null);
+        }
+        MainActivity.this.filePathCallback = filePathCallback;
+
+        Intent intent;
+        try {
+          intent = fileChooserParams.createIntent();
+        } catch (Exception e) {
+          MainActivity.this.filePathCallback = null;
+          return false;
+        }
+
+        try {
+          startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE);
+          return true;
+        } catch (ActivityNotFoundException e) {
+          MainActivity.this.filePathCallback.onReceiveValue(null);
+          MainActivity.this.filePathCallback = null;
+          return false;
+        }
       }
 
       // Also handle closing the popup window from JavaScript (e.g., window.close()),
