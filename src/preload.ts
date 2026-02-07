@@ -379,8 +379,32 @@ if (!window.native) {
     },
     cachedTorrents: async () => await (await torrent).cached(),
     getDisplays: async cb => await (await torrent).chromecasts.listen(proxy(cb)),
-    castPlay: async (host, hash, id, media) => await (await torrent).chromecasts.play(host, hash, id, media),
-    castClose: async (host) => await (await torrent).chromecasts.close(host),
+    castPlay: async (host, hash, id, media) => {
+      let notiPermission = await ForegroundService.checkPermissions()
+      if (notiPermission.display === 'prompt') notiPermission = await ForegroundService.requestPermissions()
+      if (notiPermission.display === 'granted') {
+        await ForegroundService.startForegroundService({
+          id: 1,
+          title: 'Hayase is running',
+          body: 'Hayase is currently running in the background',
+          smallIcon: 'ic_launcher_foreground',
+          silent: true,
+          serviceType: 2 as ServiceType,
+          notificationChannelId: 'default'
+        })
+      }
+      await (await torrent).chromecasts.play(host, hash, id, media)
+
+      if (notiPermission.display === 'granted') await ForegroundService.stopForegroundService()
+    },
+    castClose: async (host) => {
+      await (await torrent).chromecasts.close(host)
+      try {
+        await ForegroundService.stopForegroundService()
+      } catch (error) {
+        // ignore
+      }
+    },
     enableCORS: async (urls) => {
       try {
         if (Capacitor.isPluginAvailable('CorsProxy')) {
