@@ -378,7 +378,7 @@ if (!window.native) {
       await sendNodeSettings('settings')
     },
     cachedTorrents: async () => await (await torrent).cached(),
-    getDisplays: async cb => await (await torrent).chromecasts.listen(proxy(cb)),
+    getDisplays: async cb => await (await torrent).listenDisplay(proxy(cb)),
     castPlay: async (host, hash, id, media) => {
       let notiPermission = await ForegroundService.checkPermissions()
       if (notiPermission.display === 'prompt') notiPermission = await ForegroundService.requestPermissions()
@@ -393,12 +393,12 @@ if (!window.native) {
           notificationChannelId: 'default'
         })
       }
-      await (await torrent).chromecasts.play(host, hash, id, media)
+      await (await torrent).playDisplay(host, hash, id, media)
 
       if (notiPermission.display === 'granted') await ForegroundService.stopForegroundService()
     },
     castClose: async (host) => {
-      await (await torrent).chromecasts.close(host)
+      await (await torrent).closeDisplay(host)
       try {
         await ForegroundService.stopForegroundService()
       } catch (error) {

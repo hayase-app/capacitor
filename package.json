@@ -29,10 +29,10 @@
     "nodejs-mobile-gyp": "^0.4.0",
     "npm-run-all": "^4.1.5",
     "torrent-client": "github:hayase-app/torrent-client",
-    "ts-loader": "^9.5.4",
+    "ts-loader": "^9.5.7",
     "ts-node": "^10.9.2",
-    "webpack": "^5.102.1",
-    "webpack-cli": "^5.1.4",
+    "webpack": "^5.106.0",
+    "webpack-cli": "^7.0.2",
     "webpack-dev-server": "^5.2.2",
     "webpack-license-plugin": "^4.5.1"
   },
