@@ -354,6 +354,8 @@ if (!window.native) {
     checkIncomingConnections: async (port) => await (await torrent).checkIncomingConnections(port),
     updatePeerCounts: async (hashes) => await (await torrent).scrape(hashes),
     playTorrent: async (id, mediaID, episode) => await (await torrent).playTorrent(id, mediaID, episode),
+    rescanTorrents: async (hashes) => await (await torrent).rescanTorrents(hashes),
+    deleteTorrents: async (hashes) => await (await torrent).deleteTorrents(hashes),
     library: async () => await (await torrent).library(),
     attachments: async (hash, id) => await (await torrent).attachments.attachments(hash, id),
     tracks: async (hash, id) => await (await torrent).attachments.tracks(hash, id),
@@ -370,13 +372,10 @@ if (!window.native) {
       await sendNodeSettings('settings')
     },
     cachedTorrents: async () => await (await torrent).cached(),
+    createNZB: async (id, url, domain, port, login, password, poolSize) => await (await torrent).createNZBWebSeed(id, url, domain, port, login, password, poolSize),
     getDisplays: async cb => await (await torrent).listenDisplay(proxy(cb)),
-    castPlay: async (host, hash, id, media) => {
-      await (await torrent).playDisplay(host, hash, id, media)
-    },
-    castClose: async (host) => {
-      await (await torrent).closeDisplay(host)
-    },
+    castPlay: async (host, hash, id, media) => await (await torrent).playDisplay(host, hash, id, media),
+    castClose: async (host) => await (await torrent).closeDisplay(host),
     enableCORS: async (urls) => {
       try {
         // @ts-expect-error plugin is native-only
