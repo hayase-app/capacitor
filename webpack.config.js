@@ -1,4 +1,5 @@
 import { join, resolve } from 'node:path'
+import { platform } from 'node:process'
 
 import CopyWebpackPlugin from 'copy-webpack-plugin'
 import webpack from 'webpack'
@@ -8,6 +9,8 @@ import 'webpack-dev-server'
 const dirname = import.meta.dirname || new URL('.', import.meta.url).pathname
 
 const nodeJSNativeFolder = join(dirname, 'public', 'nodejs').replaceAll('\\', '/')
+
+const isMac = platform === 'darwin'
 
 /** @type {import('webpack').Configuration[]} */
 const config = [
@@ -137,5 +140,9 @@ const config = [
     }
   }
 ]
+
+if (isMac && config[0]?.resolve?.alias) {
+  config[0].resolve.alias['cross-fetch-ponyfill'] = resolve('./src/fetch.js')
+}
 
 export default config
