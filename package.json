@@ -52,5 +52,5 @@
     "dev:logcat-disable": "adb shell setprop persist.log.tag S",
     "test:e2e": "cross-env NODE_ENV=production run-s build:web dev:android"
   },
-  "version": "6.4.28"
+  "version": "6.4.29"
 }

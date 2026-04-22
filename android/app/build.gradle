@@ -45,6 +45,11 @@ android {
             enable false
         }
     }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
     buildTypes {
         release {
             signingConfig signingConfigs.release
