@@ -3,6 +3,7 @@ import { App } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { Capacitor } from '@capacitor/core'
 import { Device } from '@capacitor/device'
+import { ScreenOrientation } from '@capacitor/screen-orientation'
 // import { LocalNotifications } from '@capacitor/local-notifications'
 import { Share } from '@capacitor/share'
 import { ForegroundService, type ServiceType } from '@capawesome-team/capacitor-android-foreground-service'
@@ -167,6 +168,11 @@ if (!window.native) {
   //   }
   //   if (canShowNotifications) LocalNotifications.schedule({ notifications: [notification] })
   // })
+
+  screen.orientation.lock = orientation => ScreenOrientation.lock({ orientation })
+  screen.orientation.unlock = () => ScreenOrientation.unlock()
+
+  const isAndroid = navigator.userAgent.includes('Android')
 
   const protocolRx = /hayase:\/\/([a-z0-9]+)\/(.*)/i
 
@@ -337,27 +343,13 @@ if (!window.native) {
 
   const native: Partial<Native> = {
     openURL: (url: string) => Browser.open({ url }),
-    selectDownload: async (type?: 'cache' | 'internal' | 'sdcard') => {
-      const path = await storageTypeToPath(type)
-      await (await torrent).verifyDirectoryPermissions(path)
-      store.set('torrentPath', type ?? 'cache')
-      await sendNodeSettings('settings')
-      return path
-    },
-    // getLogs: () => main.getLogs(),
     getDeviceInfo: async () => ({
       features: {},
       info: await Device.getInfo(),
       cpu: {},
       ram: {}
     }),
-    setActionHandler: (name, cb) => MediaSessionPlugin.addListener(name, cb!),
-    setMediaSession: (session, _id, duration) => MediaSessionPlugin.setMediaSession({ ...session, duration }),
-    setPositionState: (state, paused) => MediaSessionPlugin.setPlaybackState({
-      ...(state as { duration: number, playbackRate: number, position: number }),
-      state: stateMapping[paused]
-    }),
-    setPlayBackState: async () => {},
+
     checkAvailableSpace: async () => await (await torrent).checkAvailableSpace(),
     checkIncomingConnections: async (port) => await (await torrent).checkIncomingConnections(port),
     updatePeerCounts: async (hashes) => await (await torrent).scrape(hashes),
@@ -380,43 +372,55 @@ if (!window.native) {
     cachedTorrents: async () => await (await torrent).cached(),
     getDisplays: async cb => await (await torrent).listenDisplay(proxy(cb)),
     castPlay: async (host, hash, id, media) => {
-      let notiPermission = await ForegroundService.checkPermissions()
-      if (notiPermission.display === 'prompt') notiPermission = await ForegroundService.requestPermissions()
-      if (notiPermission.display === 'granted') {
-        await ForegroundService.startForegroundService({
-          id: 1,
-          title: 'Hayase is running',
-          body: 'Hayase is currently running in the background',
-          smallIcon: 'ic_launcher_foreground',
-          silent: true,
-          serviceType: 2 as ServiceType,
-          notificationChannelId: 'default'
-        })
-      }
       await (await torrent).playDisplay(host, hash, id, media)
-
-      if (notiPermission.display === 'granted') await ForegroundService.stopForegroundService()
     },
     castClose: async (host) => {
       await (await torrent).closeDisplay(host)
-      try {
-        await ForegroundService.stopForegroundService()
-      } catch (error) {
-        // ignore
-      }
     },
     enableCORS: async (urls) => {
       try {
-        if (Capacitor.isPluginAvailable('CorsProxy')) {
-          // @ts-expect-error plugin is native-only
-          await Capacitor.Plugins.CorsProxy.enableCORS({ urls })
-        }
+        // @ts-expect-error plugin is native-only
+        await Capacitor.Plugins.CorsProxy.enableCORS({ urls })
       } catch (error) {
         console.error('Failed to enable CORS proxy', error)
       }
     },
     isApp: true,
-    spawnPlayer: async (url) => {
+    version: () => version,
+    navigate: async (cb) => {
+      App.addListener('appUrlOpen', ({ url }) => {
+        const res = handleProtocol(url)
+        if (res) cb(res)
+      })
+      const url = await App.getLaunchUrl()
+      if (!url) return
+      const res = handleProtocol(url.url)
+      if (res) cb(res)
+    },
+    share: async (data) => {
+      if (!data) return
+      Share.share({ title: data.title, url: data.url, dialogTitle: data.title })
+    },
+    defaultTransparency: () => false,
+    debug: async (levels) => await (await torrent).debug(levels)
+  }
+
+  if (isAndroid) {
+    native.selectDownload = async (type?: 'cache' | 'internal' | 'sdcard') => {
+      const path = await storageTypeToPath(type)
+      await (await torrent).verifyDirectoryPermissions(path)
+      store.set('torrentPath', type ?? 'cache')
+      await sendNodeSettings('settings')
+      return path
+    }
+    native.setActionHandler = (name, cb) => MediaSessionPlugin.addListener(name, cb!)
+    native.setMediaSession = (session, _id, duration) => MediaSessionPlugin.setMediaSession({ ...session, duration })
+    native.setPositionState = (state, paused) => MediaSessionPlugin.setPlaybackState({
+      ...(state as { duration: number, playbackRate: number, position: number }),
+      state: stateMapping[paused]
+    })
+    native.setPlayBackState = async () => {}
+    native.spawnPlayer = async (url) => {
       let notiPermission = await ForegroundService.checkPermissions()
       if (notiPermission.display === 'prompt') notiPermission = await ForegroundService.requestPermissions()
       if (notiPermission.display === 'granted') {
@@ -436,28 +440,37 @@ if (!window.native) {
       if (notiPermission.display === 'granted') await ForegroundService.stopForegroundService()
 
       if (!res.completed) throw new Error(res.message)
-    },
-    setDOH: async () => {
+    }
+    native.setDOH = async () => {
       const res = await IntentUri.openUri({ url: 'intent:#Intent;action=android.settings.SETTINGS;end;' })
       if (!res.completed) throw new Error(res.message)
-    },
-    version: () => version,
-    navigate: async (cb) => {
-      App.addListener('appUrlOpen', ({ url }) => {
-        const res = handleProtocol(url)
-        if (res) cb(res)
-      })
-      const url = await App.getLaunchUrl()
-      if (!url) return
-      const res = handleProtocol(url.url)
-      if (res) cb(res)
-    },
-    share: async (data) => {
-      if (!data) return
-      Share.share({ title: data.title, url: data.url, dialogTitle: data.title })
-    },
-    defaultTransparency: () => false,
-    debug: async (levels) => await (await torrent).debug(levels)
+    }
+    native.castPlay = async (host, hash, id, media) => {
+      let notiPermission = await ForegroundService.checkPermissions()
+      if (notiPermission.display === 'prompt') notiPermission = await ForegroundService.requestPermissions()
+      if (notiPermission.display === 'granted') {
+        await ForegroundService.startForegroundService({
+          id: 1,
+          title: 'Hayase is running',
+          body: 'Hayase is currently running in the background',
+          smallIcon: 'ic_launcher_foreground',
+          silent: true,
+          serviceType: 2 as ServiceType,
+          notificationChannelId: 'default'
+        })
+      }
+      await (await torrent).playDisplay(host, hash, id, media)
+
+      if (notiPermission.display === 'granted') await ForegroundService.stopForegroundService()
+    }
+    native.castClose = async (host) => {
+      await (await torrent).closeDisplay(host)
+      try {
+        await ForegroundService.stopForegroundService()
+      } catch (error) {
+        // ignore
+      }
+    }
   }
 
   // @ts-expect-error yep.

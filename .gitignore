@@ -9,6 +9,7 @@ android/app/src/main/res/*
 android/app/src/main/res/drawable/*
 !android/app/src/main/res/drawable/ic_pip_icon.xml
 
+.DS_Store
 ios/
 
 *.jks

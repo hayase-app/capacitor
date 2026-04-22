@@ -1,0 +1,11 @@
+ignoredBuiltDependencies:
+  - '@thaunknown/yencode'
+  - node-datachannel
+  - utp-native
+
+onlyBuiltDependencies:
+  - '@capacitor/assets'
+  - bufferutil
+  - protobufjs
+  - sharp
+  - utf-8-validate

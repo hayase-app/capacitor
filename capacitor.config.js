@@ -11,7 +11,8 @@ module.exports = {
   plugins: {
     SplashScreen: { launchShowDuration: 0 },
     CapacitorHttp: { enabled: false },
-    CapacitorNodeJS: { nodeDir: 'nodejs', startMode: 'manual' }
+    CapacitorNodeJS: { nodeDir: 'nodejs', startMode: 'manual' },
+    SystemBars: { insetsHandling: 'disable' }
   },
   server: {
     cleartext: true,

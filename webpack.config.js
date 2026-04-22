@@ -7,6 +7,8 @@ import 'webpack-dev-server'
 
 const dirname = import.meta.dirname || new URL('.', import.meta.url).pathname
 
+const nodeJSNativeFolder = join(dirname, 'public', 'nodejs').replaceAll('\\', '/')
+
 /** @type {import('webpack').Configuration[]} */
 const config = [
   {
@@ -14,9 +16,11 @@ const config = [
     output: {
       path: join(dirname, 'build', 'nodejs'),
       filename: 'index.js',
+      clean: true,
       publicPath: './'
     },
     module: {
+      noParse: (filePath) => filePath.includes('y.cjs'),
       rules: [
         {
           test: /\.tsx?$/,
@@ -32,10 +36,10 @@ const config = [
       ]
     },
     externals: {
-      'utp-native': 'require("utp-native")',
-      bridge: 'require("bridge")',
-      '@thaunknown/yencode': 'require("@thaunknown/yencode")',
-      '@thaunknown/yencode/build/Release/yencode.node': 'require("@thaunknown/yencode/build/Release/yencode.node")'
+      'utp-native': 'commonjs utp-native',
+      bridge: 'commonjs bridge',
+      'node-gyp-build': 'commonjs node-gyp-build',
+      '@thaunknown/yencode': 'commonjs @thaunknown/yencode'
     },
     resolve: {
       aliasFields: [],
@@ -57,7 +61,22 @@ const config = [
       client: false
     },
     plugins: [
-      new CopyWebpackPlugin({ patterns: [{ from: join(dirname, 'public', 'nodejs') }] }),
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: nodeJSNativeFolder + '/**/*.js',
+            context: nodeJSNativeFolder
+          },
+          {
+            from: nodeJSNativeFolder + '/**/*.json',
+            context: nodeJSNativeFolder
+          },
+          {
+            from: nodeJSNativeFolder + '/**/*.node',
+            context: nodeJSNativeFolder
+          }
+        ]
+      }),
       new webpack.optimize.LimitChunkCountPlugin({
         maxChunks: 1
       }),
@@ -113,6 +132,7 @@ const config = [
     output: {
       path: join(dirname, 'build'),
       filename: 'preload.js',
+      clean: true,
       publicPath: './'
     }
   }

@@ -13,6 +13,7 @@ dependencies {
     implementation project(':capacitor-browser')
     implementation project(':capacitor-device')
     implementation project(':capacitor-local-notifications')
+    implementation project(':capacitor-screen-orientation')
     implementation project(':capacitor-share')
     implementation project(':capawesome-team-capacitor-android-foreground-service')
     implementation project(':capacitor-intent-uri')

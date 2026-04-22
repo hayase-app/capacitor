@@ -14,7 +14,7 @@ cd public/nodejs
 if [ -d "node_modules" ]; then
     echo "node_modules already exists, skipping npm install"
 else
-    npm install
+    npm install --ignore-scripts
 fi
 
 toolchain_folder=$NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin
@@ -40,17 +40,23 @@ for ((i=0;i<${#toolchain_target_archs[@]};i++)); do
   export npm_config_arch=${node_target_arch}
   export npm_config_plaform=android
   export npm_config_format=make-android
-  export npm_gyp_defines="target_arch=$node_target_arch v8_target_arch=$node_target_arch android_target_arch=$node_target_arch host_os=linux OS=android"
+  export npm_config_android_ndk_path=$NDK_ROOT
+  export android_ndk_path=$NDK_ROOT
+  export npm_gyp_defines="android_ndk_path=$NDK_ROOT target_arch=$node_target_arch v8_target_arch=$node_target_arch android_target_arch=$node_target_arch host_os=linux OS=android"
   
   # --from-from-source is used by node-pre-gyp
   echo "Rebuilding for $node_target_arch"
   npm rebuild --build-from-source
 
-  for file in node_modules/*/build/Release/*.node; do
-    package=$(echo "$file" | cut -f 2 -d "/")
+  for file in node_modules/*/build/Release/*.node node_modules/@*/*/build/Release/*.node; do
+    [ -f "$file" ] || continue
+
+    relative_path="${file#node_modules/}"
+    package="${relative_path%/build/Release/*}"
+
     echo "moving prebuild for $package ($file)"
-    mkdir "node_modules/$package/prebuilds/android-$node_target_arch"
-    mv $file "node_modules/$package/prebuilds/android-$node_target_arch/node.napi.node"
+    mkdir -p "node_modules/$package/prebuilds/android-$node_target_arch"
+    mv "$file" "node_modules/$package/prebuilds/android-$node_target_arch/node.napi.node"
     rm -r "node_modules/$package/build/"
   done
 done

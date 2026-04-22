@@ -1,10 +1,9 @@
 FROM alpine:3.19 AS worker
 
-FROM saschpe/android-ndk:35-jdk23.0.2_7-ndk28.0.13004108-cmake3.31.5
+FROM saschpe/android-ndk:37.0-jdk23.0.2_7-ndk30.0.14904198-cmake4.1.2
 
 USER root
 
-COPY ../../nodejs-mobile /opt/libnode
 ENV LIBNODE_PATH=/opt/libnode
 
 # Install nodejs 24.5.0 (same version as nodejs-mobile)
@@ -17,5 +16,7 @@ RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg -
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
 RUN apt-get update
 RUN apt-get install nodejs -y
+
+COPY node_modules/capacitor-nodejs/android/libnode /opt/libnode
 
 WORKDIR /app

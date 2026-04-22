@@ -4,11 +4,15 @@ import android.app.Dialog;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.webkit.WebChromeClient;
 import android.webkit.ValueCallback;
 import android.webkit.DownloadListener;
@@ -24,6 +28,10 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.JSArray;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import net.hampoelz.capacitor.nodejs.CapacitorNodeJSPlugin;
 import net.hampoelz.capacitor.nodejs.CapacitorNodeJS;
@@ -141,6 +149,19 @@ public class MainActivity extends BridgeActivity {
     }
 
     final WebView webView = getBridge().getWebView();
+    webView.setBackgroundColor(Color.TRANSPARENT);
+    View webViewParent = (View) webView.getParent();
+    if (webViewParent != null) {
+      webViewParent.setBackgroundColor(Color.TRANSPARENT);
+      // Capacitor 8 SystemBars may apply top/bottom padding to this parent view,
+      // which shows up as opaque bars. Keep padding zero so content can extend
+      // behind transparent system bars.
+      ViewCompat.setOnApplyWindowInsetsListener(webViewParent, (v, insets) -> {
+        v.setPadding(0, 0, 0, 0);
+        return insets;
+      });
+      ViewCompat.requestApplyInsets(webViewParent);
+    }
 
     AppUpdater.downloadAndInstallApk(this, "https://api.hayase.watch/latest");
 
@@ -152,7 +173,7 @@ public class MainActivity extends BridgeActivity {
     settings.setUseWideViewPort(true);
     settings.setLoadWithOverviewMode(true);
 
-    hideSystemUI();
+    configureSystemBars();
 
     // Set user agent to include AndroidTV if device supports Leanback or was
     // launched with LEANBACK_LAUNCHER
@@ -176,6 +197,7 @@ public class MainActivity extends BridgeActivity {
         super.onPageFinished(view, url);
         if (url != null && (url.startsWith("https://hayase.app") || url.startsWith("http://localhost"))) {
           injectJavaScript(view);
+          configureSystemBars();
         }
       }
 
@@ -338,6 +360,8 @@ public class MainActivity extends BridgeActivity {
         mCustomView = view;
         mCustomViewCallback = callback;
 
+        configureFullscreenBars(true);
+
         // Add the custom view to the main content view, not decor view, to preserve
         // insets
         ViewGroup contentView = findViewById(android.R.id.content);
@@ -353,6 +377,7 @@ public class MainActivity extends BridgeActivity {
         }
         ((ViewGroup) mCustomView.getParent()).removeView(mCustomView);
         mCustomView = null;
+        configureFullscreenBars(false);
         if (mCustomViewCallback != null) {
           mCustomViewCallback.onCustomViewHidden();
         }
@@ -454,16 +479,48 @@ public class MainActivity extends BridgeActivity {
     });
   }
 
-  // Hides the status and navigation bars for immersive fullscreen
-  private void hideSystemUI() {
+  // Keep system bars visible and transparent.
+  private void configureSystemBars() {
+    getWindow().setStatusBarColor(Color.TRANSPARENT);
+    getWindow().setNavigationBarColor(Color.TRANSPARENT);
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      getWindow().setStatusBarContrastEnforced(false);
+      getWindow().setNavigationBarContrastEnforced(false);
+    }
+
+    configureFullscreenBars(false);
+  }
+
+    private void configureFullscreenBars(boolean fullscreen) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      WindowInsetsControllerCompat controller =
+          WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+      if (controller != null) {
+        controller.hide(WindowInsetsCompat.Type.statusBars());
+        if (fullscreen) {
+          controller.hide(WindowInsetsCompat.Type.navigationBars());
+        } else {
+          controller.show(WindowInsetsCompat.Type.navigationBars());
+        }
+      }
+      return;
+    }
+
     View decorView = getWindow().getDecorView();
-    decorView.setSystemUiVisibility(
-        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            | View.SYSTEM_UI_FLAG_FULLSCREEN);
+    if (fullscreen) {
+      decorView.setSystemUiVisibility(
+          View.SYSTEM_UI_FLAG_FULLSCREEN
+              | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+              | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+              | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+              | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    } else {
+      decorView.setSystemUiVisibility(
+          View.SYSTEM_UI_FLAG_FULLSCREEN
+              | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+              | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+    }
   }
 
   private void injectJavaScript(WebView webView) {
