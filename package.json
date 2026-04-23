@@ -12,17 +12,17 @@
     "@capacitor/ios": "^8.3.1",
     "@capacitor/local-notifications": "^8.0.0",
     "@capacitor/screen-orientation": "^8.0.1",
-    "@capacitor/share": "8.0.0",
+    "@capacitor/share": "8.0.1",
     "@capawesome-team/capacitor-android-foreground-service": "^8.0.0",
     "@types/webpack": "^5.28.5",
-    "abslink": "^1.1.6",
+    "abslink": "^1.2.2",
     "capacitor-intent-uri": "^0.0.2",
     "capacitor-nodejs": "github:hayase-app/capacitor-nodejs",
     "concurrently": "^9.2.1",
     "copy-webpack-plugin": "^12.0.2",
     "cordova-plugin-pip": "^0.0.2",
     "cordova-res": "^0.15.4",
-    "cross-env": "^10.0.0",
+    "cross-env": "^10.1.0",
     "eslint-config-standard-universal": "^1.0.9",
     "native": "github:hayase-app/native",
     "nodejs-mobile-gyp": "^0.4.0",
@@ -30,9 +30,9 @@
     "torrent-client": "github:hayase-app/torrent-client",
     "ts-loader": "^9.5.7",
     "ts-node": "^10.9.2",
-    "webpack": "^5.106.0",
+    "webpack": "^5.106.2",
     "webpack-cli": "^7.0.2",
-    "webpack-dev-server": "^5.2.2",
+    "webpack-dev-server": "^5.2.3",
     "webpack-license-plugin": "^4.5.1"
   },
   "scripts": {
@@ -52,5 +52,5 @@
     "dev:logcat-disable": "adb shell setprop persist.log.tag S",
     "test:e2e": "cross-env NODE_ENV=production run-s build:web dev:android"
   },
-  "version": "6.4.29"
+  "version": "6.4.30"
 }
