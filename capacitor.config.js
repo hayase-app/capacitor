@@ -12,7 +12,7 @@ module.exports = {
     SplashScreen: { launchShowDuration: 0 },
     CapacitorHttp: { enabled: false },
     CapacitorNodeJS: { nodeDir: 'nodejs', startMode: 'manual' },
-    SystemBars: { insetsHandling: 'disable' }
+    SystemBars: { insetsHandling: 'disable', hidden: true }
   },
   server: {
     cleartext: true,

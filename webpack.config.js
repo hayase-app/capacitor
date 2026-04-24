@@ -12,6 +12,8 @@ const nodeJSNativeFolder = join(dirname, 'public', 'nodejs').replaceAll('\\', '/
 
 const isMac = platform === 'darwin'
 
+const prebuild = isMac ? 'ios*' : 'android*'
+
 /** @type {import('webpack').Configuration[]} */
 const config = [
   {
@@ -71,11 +73,15 @@ const config = [
             context: nodeJSNativeFolder
           },
           {
+            from: nodeJSNativeFolder + '/**/*.cjs',
+            context: nodeJSNativeFolder
+          },
+          {
             from: nodeJSNativeFolder + '/**/*.json',
             context: nodeJSNativeFolder
           },
           {
-            from: nodeJSNativeFolder + '/**/*.node',
+            from: nodeJSNativeFolder + `/**/prebuilds/${prebuild}/node.napi.node`,
             context: nodeJSNativeFolder
           }
         ]
@@ -92,7 +98,7 @@ const config = [
         additionalFiles: {
           'index.js.LICENSE.txt': (packages) => packages.map(({ name, version, license, licenseText, noticeText }) => `${name} ${version} (${license}) \n${noticeText ?? ''}\n${licenseText}`).join('\n\n')
         },
-        unacceptableLicenseTest: (licenseId) => !['Apache-2.0', 'MIT', 'ISC', 'BSD-3-Clause', 'BSD-2-Clause'].includes(licenseId)
+        unacceptableLicenseTest: (licenseId) => !['Apache-2.0', 'MIT', 'ISC', 'BSD-3-Clause', 'BSD-2-Clause', 'CC0-1.0'].includes(licenseId)
       })
     ]
   },

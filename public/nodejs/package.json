@@ -2,8 +2,9 @@
   "name": "nodejs-capacitor-thread",
   "private": true,
   "dependencies": {
-    "utp-native": "^2.5.3",
-    "@thaunknown/yencode": "^1.4.0"
+    "@thaunknown/yencode": "^1.5.5",
+    "fs-native-extensions": "^1.2.7",
+    "utp-native": "^2.5.3"
   },
   "version": "1.0.0",
   "main": "./index.js"

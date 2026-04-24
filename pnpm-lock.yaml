@@ -55,7 +55,7 @@ importers:
         version: 0.0.2(@capacitor/core@8.3.1)
       capacitor-nodejs:
         specifier: github:hayase-app/capacitor-nodejs
-        version: git+https://git@github.com:hayase-app/capacitor-nodejs.git#ca5c7dc9c55710ac247306bdd34806723a06530f(@capacitor/core@8.3.1)
+        version: git+https://git@github.com:hayase-app/capacitor-nodejs.git#8fc0f863240d2af284f8ad9c55b7d13eaa3aadec(@capacitor/core@8.3.1)
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
@@ -85,7 +85,7 @@ importers:
         version: 4.1.5
       torrent-client:
         specifier: github:hayase-app/torrent-client
-        version: https://codeload.github.com/hayase-app/torrent-client/tar.gz/9446fd8dd5e84d84597f68bde24621fe7357f105(bare-url@2.4.2)
+        version: https://codeload.github.com/hayase-app/torrent-client/tar.gz/e74ae998389f1fc3d24d3152c5f276cabb5b1592(bare-url@2.4.2)
       ts-loader:
         specifier: ^9.5.7
         version: 9.5.7(typescript@5.8.3)(webpack@5.106.2)
@@ -104,6 +104,15 @@ importers:
       webpack-license-plugin:
         specifier: ^4.5.1
         version: 4.5.1(webpack@5.106.2)
+
+  public/nodejs:
+    dependencies:
+      '@thaunknown/yencode':
+        specifier: ^1.5.5
+        version: 1.5.5
+      utp-native:
+        specifier: ^2.5.3
+        version: 2.5.3
 
 packages:
 
@@ -609,9 +618,9 @@ packages:
     resolution: {integrity: sha512-Q53KyCXweV1CS62EfqtPDqfpksn5keQ59PGqzzkK+g8Vif1jB4inoBCcs/BUSdsqddhE3G+2Fn+4RX3S6RqT0A==}
     engines: {node: '>=0.2.6'}
 
-  '@thaunknown/yencode@1.4.0':
-    resolution: {integrity: sha512-cVT4C/7N/cr/fSUeo6+lGvp/vnTXIB+t9E3MDhlVaF+mFf4Bj+ECtucr4ASJoo2UsPKG6rptvJ0d1WP/rgzbiw==}
-    engines: {node: '>=0.10'}
+  '@thaunknown/yencode@1.5.5':
+    resolution: {integrity: sha512-Xb2StCQfmOFUixyGX8sgIcnK80sI60vHIrHko0/yrlwSLfxe+9p48kY1JCRtT5HN6V3jRmCKT1oSs+htRHPiXg==}
+    engines: {node: '>=18'}
 
   '@trapezedev/gradle-parse@7.0.10':
     resolution: {integrity: sha512-k822Is3jGroqOTKF0gAFm80LmhFJWBAyZvNtyuXq6uQUzDDe2fj/gHwixP6VFzlpaWKLP7IuR609Xv8gwJCXyg==}
@@ -1302,8 +1311,8 @@ packages:
     peerDependencies:
       '@capacitor/core': ^6.0.0
 
-  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#ca5c7dc9c55710ac247306bdd34806723a06530f:
-    resolution: {commit: ca5c7dc9c55710ac247306bdd34806723a06530f, repo: git@github.com:hayase-app/capacitor-nodejs.git, type: git}
+  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#8fc0f863240d2af284f8ad9c55b7d13eaa3aadec:
+    resolution: {commit: 8fc0f863240d2af284f8ad9c55b7d13eaa3aadec, repo: git@github.com:hayase-app/capacitor-nodejs.git, type: git}
     version: 2.2.0
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
@@ -3282,8 +3291,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nzb-file@1.1.13:
-    resolution: {integrity: sha512-CzJGCDOEx69jE6w7tS7kiU5ZBoQVGajTxOVe5wlRMUCkokHtVWxyuZxh9ayu6Eku9zNFowY6MQXnU3AhW9yXdg==}
+  nzb-file@1.1.16:
+    resolution: {integrity: sha512-njnzjCGbrirfkA/Nb+ydcriuNy1kyJSoZZjxGaOaJBD68z9SY+5Inre8+GY/aJDznJ1ysEcFb2dVIfkbb3xYiw==}
 
   nzb-parser@1.0.2:
     resolution: {integrity: sha512-xJM5Oa7+qbZTPBakXgHKsT/+FltS4xAIBxlA18gRzkZuhL6Cw5I4GrFgEtvSHQM/Tvcd7yO06SidlRoMBwFfEw==}
@@ -4282,8 +4291,8 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
 
-  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/9446fd8dd5e84d84597f68bde24621fe7357f105:
-    resolution: {tarball: https://codeload.github.com/hayase-app/torrent-client/tar.gz/9446fd8dd5e84d84597f68bde24621fe7357f105}
+  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/e74ae998389f1fc3d24d3152c5f276cabb5b1592:
+    resolution: {tarball: https://codeload.github.com/hayase-app/torrent-client/tar.gz/e74ae998389f1fc3d24d3152c5f276cabb5b1592}
     version: 1.0.0
 
   torrent-discovery@11.0.19:
@@ -5493,7 +5502,7 @@ snapshots:
     dependencies:
       uint8-util: 2.2.6
 
-  '@thaunknown/yencode@1.4.0':
+  '@thaunknown/yencode@1.5.5':
     dependencies:
       node-gyp-build: 4.8.4
 
@@ -6365,7 +6374,7 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.3.1
 
-  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#ca5c7dc9c55710ac247306bdd34806723a06530f(@capacitor/core@8.3.1):
+  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#8fc0f863240d2af284f8ad9c55b7d13eaa3aadec(@capacitor/core@8.3.1):
     dependencies:
       '@capacitor/core': 8.3.1
 
@@ -8379,8 +8388,7 @@ snapshots:
 
   napi-build-utils@2.0.0: {}
 
-  napi-macros@2.2.2:
-    optional: true
+  napi-macros@2.2.2: {}
 
   native-run@2.0.1:
     dependencies:
@@ -8551,9 +8559,9 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nzb-file@1.1.13:
+  nzb-file@1.1.16:
     dependencies:
-      '@thaunknown/yencode': 1.4.0
+      '@thaunknown/yencode': 1.5.5
       mime: 4.1.0
       nntp-js: 1.0.4
       nzb-parser: 1.0.2
@@ -9694,8 +9702,7 @@ snapshots:
 
   thunky@1.1.0: {}
 
-  timeout-refresh@1.0.3:
-    optional: true
+  timeout-refresh@1.0.3: {}
 
   tmp@0.2.3: {}
 
@@ -9705,17 +9712,18 @@ snapshots:
 
   toidentifier@1.0.1: {}
 
-  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/9446fd8dd5e84d84597f68bde24621fe7357f105(bare-url@2.4.2):
+  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/e74ae998389f1fc3d24d3152c5f276cabb5b1592(bare-url@2.4.2):
     dependencies:
       '@types/chromecast-caf-receiver': 6.0.26
       '@types/multicast-dns': 7.2.4
       bittorrent-peerid: 1.3.6
+      cross-fetch-ponyfill: 1.0.3
       fast-xml-parser: 5.7.1
       matroska-metadata: 1.0.8
       multicast-dns: 7.2.5
       native: https://codeload.github.com/hayase-app/native/tar.gz/8e9d865f111e356a087e14865d9451771546aad2
       network-address: 1.1.2
-      nzb-file: 1.1.13
+      nzb-file: 1.1.16
       protobufjs: 8.0.1
       webtorrent: https://codeload.github.com/webtorrent/webtorrent/tar.gz/02bfbc529af17371894af77eecb205e781552fe4(bare-url@2.4.2)
     transitivePeerDependencies:
@@ -9912,8 +9920,7 @@ snapshots:
 
   unordered-array-remove@1.0.2: {}
 
-  unordered-set@2.0.1:
-    optional: true
+  unordered-set@2.0.1: {}
 
   unpipe@1.0.0: {}
 
@@ -9960,7 +9967,6 @@ snapshots:
       readable-stream: 3.6.2
       timeout-refresh: 1.0.3
       unordered-set: 2.0.1
-    optional: true
 
   uuid@7.0.3: {}
 
