@@ -50,6 +50,9 @@ importers:
       abslink:
         specifier: ^1.2.2
         version: 1.2.2
+      bittorrent-tracker:
+        specifier: 11.2.2
+        version: 11.2.2
       capacitor-intent-uri:
         specifier: ^0.0.2
         version: 0.0.2(@capacitor/core@8.3.1)
@@ -77,6 +80,9 @@ importers:
       native:
         specifier: github:hayase-app/native
         version: https://codeload.github.com/hayase-app/native/tar.gz/8e9d865f111e356a087e14865d9451771546aad2
+      node-fetch:
+        specifier: ^3.3.2
+        version: 3.3.2
       node-gyp-build-mobile:
         specifier: ^4.6.0-3
         version: 4.6.0-3
