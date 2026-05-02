@@ -12,8 +12,6 @@ const nodeJSNativeFolder = join(dirname, 'public', 'nodejs').replaceAll('\\', '/
 
 const isMac = platform === 'darwin'
 
-const prebuild = isMac ? 'ios*' : 'android*'
-
 /** @type {import('webpack').Configuration[]} */
 const config = [
   {
@@ -67,24 +65,23 @@ const config = [
     },
     plugins: [
       new CopyWebpackPlugin({
-        patterns: [
-          {
-            from: nodeJSNativeFolder + '/**/*.js',
-            context: nodeJSNativeFolder
-          },
-          {
-            from: nodeJSNativeFolder + '/**/*.cjs',
-            context: nodeJSNativeFolder
-          },
-          {
-            from: nodeJSNativeFolder + '/**/*.json',
-            context: nodeJSNativeFolder
-          },
-          {
-            from: nodeJSNativeFolder + `/**/prebuilds/${prebuild}/node.napi.node`,
-            context: nodeJSNativeFolder
-          }
-        ]
+        patterns: isMac
+          ? [
+              {
+                from: nodeJSNativeFolder + '/**/!(*.ts|*.map|*.node|*.bare|*.md|*.cts)',
+                context: nodeJSNativeFolder
+              }
+            ]
+          : [
+              {
+                from: nodeJSNativeFolder + '/**/*.{js,cjs,json}',
+                context: nodeJSNativeFolder
+              },
+              {
+                from: nodeJSNativeFolder + '/**/prebuilds/android*/node.napi.node',
+                context: nodeJSNativeFolder
+              }
+            ]
       }),
       new webpack.optimize.LimitChunkCountPlugin({
         maxChunks: 1
