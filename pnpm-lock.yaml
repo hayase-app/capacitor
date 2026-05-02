@@ -55,7 +55,7 @@ importers:
         version: 0.0.2(@capacitor/core@8.3.1)
       capacitor-nodejs:
         specifier: github:hayase-app/capacitor-nodejs
-        version: git+https://git@github.com:hayase-app/capacitor-nodejs.git#8fc0f863240d2af284f8ad9c55b7d13eaa3aadec(@capacitor/core@8.3.1)
+        version: git+https://git@github.com:hayase-app/capacitor-nodejs.git#490954d16e1c7f407e9f9081ee29f924b81c71d8(@capacitor/core@8.3.1)
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
@@ -77,6 +77,9 @@ importers:
       native:
         specifier: github:hayase-app/native
         version: https://codeload.github.com/hayase-app/native/tar.gz/8e9d865f111e356a087e14865d9451771546aad2
+      node-gyp-build-mobile:
+        specifier: ^4.6.0-3
+        version: 4.6.0-3
       nodejs-mobile-gyp:
         specifier: ^0.4.0
         version: 0.4.0
@@ -104,15 +107,6 @@ importers:
       webpack-license-plugin:
         specifier: ^4.5.1
         version: 4.5.1(webpack@5.106.2)
-
-  public/nodejs:
-    dependencies:
-      '@thaunknown/yencode':
-        specifier: ^1.5.5
-        version: 1.5.5
-      utp-native:
-        specifier: ^2.5.3
-        version: 2.5.3
 
 packages:
 
@@ -1311,8 +1305,8 @@ packages:
     peerDependencies:
       '@capacitor/core': ^6.0.0
 
-  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#8fc0f863240d2af284f8ad9c55b7d13eaa3aadec:
-    resolution: {commit: 8fc0f863240d2af284f8ad9c55b7d13eaa3aadec, repo: git@github.com:hayase-app/capacitor-nodejs.git, type: git}
+  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#490954d16e1c7f407e9f9081ee29f924b81c71d8:
+    resolution: {commit: 490954d16e1c7f407e9f9081ee29f924b81c71d8, repo: git@github.com:hayase-app/capacitor-nodejs.git, type: git}
     version: 2.2.0
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
@@ -3238,6 +3232,10 @@ packages:
   node-fetch@3.3.2:
     resolution: {integrity: sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  node-gyp-build-mobile@4.6.0-3:
+    resolution: {integrity: sha512-N3BLsnhepbSXRaSBa1Prx/QPO4NsU/eZhn6NnfzkH9w54vHhmTjfJtEZMoPVicYPoF2JhUCep47NSLrvGmrOvQ==}
+    hasBin: true
 
   node-gyp-build@4.8.4:
     resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
@@ -6374,7 +6372,7 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.3.1
 
-  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#8fc0f863240d2af284f8ad9c55b7d13eaa3aadec(@capacitor/core@8.3.1):
+  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#490954d16e1c7f407e9f9081ee29f924b81c71d8(@capacitor/core@8.3.1):
     dependencies:
       '@capacitor/core': 8.3.1
 
@@ -8388,7 +8386,8 @@ snapshots:
 
   napi-build-utils@2.0.0: {}
 
-  napi-macros@2.2.2: {}
+  napi-macros@2.2.2:
+    optional: true
 
   native-run@2.0.1:
     dependencies:
@@ -8476,6 +8475,8 @@ snapshots:
       data-uri-to-buffer: 4.0.1
       fetch-blob: 3.2.0
       formdata-polyfill: 4.0.10
+
+  node-gyp-build-mobile@4.6.0-3: {}
 
   node-gyp-build@4.8.4: {}
 
@@ -9702,7 +9703,8 @@ snapshots:
 
   thunky@1.1.0: {}
 
-  timeout-refresh@1.0.3: {}
+  timeout-refresh@1.0.3:
+    optional: true
 
   tmp@0.2.3: {}
 
@@ -9920,7 +9922,8 @@ snapshots:
 
   unordered-array-remove@1.0.2: {}
 
-  unordered-set@2.0.1: {}
+  unordered-set@2.0.1:
+    optional: true
 
   unpipe@1.0.0: {}
 
@@ -9967,6 +9970,7 @@ snapshots:
       readable-stream: 3.6.2
       timeout-refresh: 1.0.3
       unordered-set: 2.0.1
+    optional: true
 
   uuid@7.0.3: {}
 

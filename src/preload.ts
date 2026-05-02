@@ -1,7 +1,7 @@
 /* globals PictureInPicture */
 import { App } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
-import { Capacitor } from '@capacitor/core'
+import { Capacitor, SystemBars, SystemBarType } from '@capacitor/core'
 import { Device } from '@capacitor/device'
 import { ScreenOrientation } from '@capacitor/screen-orientation'
 // import { LocalNotifications } from '@capacitor/local-notifications'
@@ -13,14 +13,18 @@ import { type ChannelListenerCallback, NodeJS } from 'capacitor-nodejs'
 
 // import engage from './engage'
 // import { PlatformType, WatchNextType } from './engage/definitions'
+import authsession from './authsession'
 import MediaSessionPlugin from './mediasession'
 import fs, { Directory } from './storage'
 import './serializers/error'
 // import { SafeArea } from 'capacitor-plugin-safe-area'
 
 import type { PluginListenerHandle } from '@capacitor/core'
-import type { Native } from 'native'
+import type { AuthResponse, Native } from 'native'
 import type TorrentClient from 'torrent-client'
+
+// @ts-expect-error yep.
+window.authsession = authsession
 
 const MAX_RELOADS = 3
 
@@ -36,143 +40,12 @@ if (reloadCount < MAX_RELOADS && !Capacitor.isPluginAvailable('App')) {
 
 // @ts-expect-error yep.
 if (!window.native) {
-  // if ((await engage.isServiceAvailable()).result) {
-  //   engage.publishContinuationCluster({
-  //     accountProfile: {
-  //       accoundId: 'global'
-  //     },
-  //     entries: [
-  //       {
-  //         type: 'tv_episode',
-  //         watchNextType: WatchNextType.NEW,
-  //         entityId: 'a',
-  //         name: 'Something Else',
-  //         platformSpecificPlaybackUris: [{
-  //           type: PlatformType.ANDROID_TV,
-  //           uri: 'intent:#Intent;action=android.intent.action.VIEW;data=hayase://playback/uniqueId1;package=app.hayase;end'
-  //         }, {
-  //           type: PlatformType.ANDROID_MOBILE,
-  //           uri: 'intent:#Intent;action=android.intent.action.VIEW;data=hayase://playback/uniqueId1;package=app.hayase;end'
-  //         }],
-  //         posterImages: [{
-  //           height: 720,
-  //           width: 1280,
-  //           uri: 'https://i.ytimg.com/vi/nEj2X9x9M7Q/maxresdefault.jpg'
-  //         }],
-  //         lastEngagementTimeMillis: 1752717555387,
-  //         durationMillis: 1500000,
-  //         episodeNumber: 1,
-  //         seasonNumber: '1',
-  //         showTitle: 'Sesbian Lex',
-  //         seasonTitle: "Can't believe I'm not gay",
-  //         airDateEpochMillis: 1752685200000,
-  //         genres: ['lesbian', 'romance']
-  //       },
-  //       {
-  //         type: 'movie',
-  //         watchNextType: WatchNextType.NEW,
-  //         entityId: 'd',
-  //         name: 'Same but movie',
-  //         releaseDateEpochMillis: 1752017555387,
-  //         posterImages: [{
-  //           height: 720,
-  //           width: 1280,
-  //           uri: 'https://i.ytimg.com/vi/nEj2X9x9M7Q/maxresdefault.jpg'
-  //         }],
-  //         platformSpecificPlaybackUris: [{
-  //           type: PlatformType.ANDROID_TV,
-  //           uri: 'intent:#Intent;action=android.intent.action.VIEW;data=hayase://playback/uniqueId1;package=app.hayase;end'
-  //         }, {
-  //           type: PlatformType.ANDROID_MOBILE,
-  //           uri: 'intent:#Intent;action=android.intent.action.VIEW;data=hayase://playback/uniqueId1;package=app.hayase;end'
-  //         }],
-  //         lastEngagementTimeMillis: 1752717555387,
-  //         durationMillis: 1500000,
-  //         description: 'Wowie',
-  //         genres: ['lesbian', 'romance']
-  //       }
-  //     ]
-  //   })
-  //   engage.publishRecommendationCluster({
-  //     accountProfile: {
-  //       accoundId: 'global'
-  //     },
-  //     clusters: [
-  //       {
-  //         entries: [
-  //           {
-  //             type: 'tv_season',
-  //             watchNextType: WatchNextType.NEW,
-  //             entityId: 'b',
-  //             infoPageUri: 'intent:#Intent;action=android.intent.action.VIEW;data=hayase://playback/uniqueId1;package=app.hayase;end',
-  //             name: 'Same stuff',
-  //             posterImages: [{
-  //               height: 720,
-  //               width: 1280,
-  //               uri: 'https://i.ytimg.com/vi/nEj2X9x9M7Q/maxresdefault.jpg'
-  //             }],
-  //             lastEngagementTimeMillis: 1752717555387,
-  //             firstEpisodeAirDateEpochMillis: 1752685200000,
-  //             latestEpisodeAirDateEpochMillis: 1752685200000,
-  //             episodeCount: 6,
-  //             seasonNumber: 1,
-  //             genres: ['lesbian', 'romance']
-  //           },
-  //           {
-  //             type: 'tv_show',
-  //             entityId: 'c',
-  //             watchNextType: WatchNextType.NEW,
-  //             infoPageUri: 'intent:#Intent;action=android.intent.action.VIEW;data=hayase://playback/uniqueId1;package=app.hayase;end',
-  //             name: 'Same but show',
-  //             posterImages: [{
-  //               height: 720,
-  //               width: 1280,
-  //               uri: 'https://i.ytimg.com/vi/nEj2X9x9M7Q/maxresdefault.jpg'
-  //             }],
-  //             lastEngagementTimeMillis: 1752717555387,
-  //             firstEpisodeAirDateEpochMillis: 1752685200000,
-  //             latestEpisodeAirDateEpochMillis: 1752685200000,
-  //             seasonCount: 2,
-  //             genres: ['lesbian', 'romance']
-  //           }
-  //         ]
-  //       }
-  //     ]
-  //   })
-  // }
+  const isAndroid = navigator.userAgent.includes('Android')
 
-  // LocalNotifications.checkPermissions().then(async value => {
-  //   if (value) {
-  //     try {
-  //       await LocalNotifications.requestPermissions()
-  //       canShowNotifications = true
-  //     } catch (e) {
-  //       console.error(e)
-  //     }
-  //   }
-  // })
-
-  // let id = 0
-  // IPC.on('notification', noti => {
-  //   /** @type {import('@capacitor/local-notifications').LocalNotificationSchema} */
-  //   const notification = {
-  //     title: noti.title,
-  //     body: noti.body,
-  //     id: id++,
-  //     attachments: [
-  //       {
-  //         id: '' + id++,
-  //         url: noti.icon
-  //       }
-  //     ]
-  //   }
-  //   if (canShowNotifications) LocalNotifications.schedule({ notifications: [notification] })
-  // })
+  SystemBars.hide({ bar: SystemBarType.StatusBar })
 
   screen.orientation.lock = orientation => ScreenOrientation.lock({ orientation })
   screen.orientation.unlock = () => ScreenOrientation.unlock()
-
-  const isAndroid = navigator.userAgent.includes('Android')
 
   const protocolRx = /hayase:\/\/([a-z0-9]+)\/(.*)/i
 
@@ -249,7 +122,7 @@ if (!window.native) {
 
   const DEFAULTS = {
     player: '',
-    torrentPath: 'cache' as 'cache' | 'internal' | 'sdcard',
+    torrentPath: isAndroid ? 'cache' : 'internal' as 'cache' | 'internal' | 'sdcard',
     torrentSettings: {
       torrentPersist: false,
       torrentDHT: false,
@@ -296,9 +169,16 @@ if (!window.native) {
     await sendNodeSettings('init')
     return wrap<TorrentClient>()
   })
+  globalThis.__torrent = torrent
   const version = App.getInfo().then(info => info.version)
 
   async function storageTypeToPath (type?: 'cache' | 'internal' | 'sdcard') {
+    if (!isAndroid) {
+      // @ts-expect-error Probably should use a plugin for getting this directory
+      if (type === 'cache') return window.nativeLocations?.cache ?? ''
+      // @ts-expect-error Probably should use a plugin for getting this directory
+      return window.nativeLocations?.documents ?? ''
+    }
     try {
       if (type !== 'cache') await fs.requestPermissions()
       let path: string | undefined
@@ -349,7 +229,13 @@ if (!window.native) {
       cpu: {},
       ram: {}
     }),
-
+    selectDownload: async (type?: 'cache' | 'internal' | 'sdcard') => {
+      const path = await storageTypeToPath(type)
+      if (isAndroid) await (await torrent).verifyDirectoryPermissions(path)
+      store.set('torrentPath', type ?? 'cache')
+      await sendNodeSettings('settings')
+      return path
+    },
     checkAvailableSpace: async () => await (await torrent).checkAvailableSpace(),
     checkIncomingConnections: async (port) => await (await torrent).checkIncomingConnections(port),
     updatePeerCounts: async (hashes) => await (await torrent).scrape(hashes),
@@ -405,13 +291,6 @@ if (!window.native) {
   }
 
   if (isAndroid) {
-    native.selectDownload = async (type?: 'cache' | 'internal' | 'sdcard') => {
-      const path = await storageTypeToPath(type)
-      await (await torrent).verifyDirectoryPermissions(path)
-      store.set('torrentPath', type ?? 'cache')
-      await sendNodeSettings('settings')
-      return path
-    }
     native.setActionHandler = (name, cb) => MediaSessionPlugin.addListener(name, cb!)
     native.setMediaSession = (session, _id, duration) => MediaSessionPlugin.setMediaSession({ ...session, duration })
     native.setPositionState = (state, paused) => MediaSessionPlugin.setPlaybackState({
@@ -470,6 +349,27 @@ if (!window.native) {
         // ignore
       }
     }
+  } else {
+    native.authAL = async (url: string) => {
+      const { url: res } = await authsession.authLegacy({ url, callbackScheme: 'hayase' })
+      const { hash } = new URL(res)
+
+      if (hash.startsWith('#access_token=')) {
+        return Object.fromEntries(new URLSearchParams(hash.replace('#', '?')).entries()) as unknown as AuthResponse
+      }
+      throw new Error('Invalid url')
+    }
+    native.authMAL = async (url: string) => {
+      const { url: res } = await authsession.authLegacy({ url, callbackScheme: 'hayase' })
+      const { search } = new URL(res)
+
+      if (search.startsWith('?code=')) {
+        return Object.fromEntries(new URLSearchParams(search).entries()) as unknown as { code: string, state: string }
+      }
+      throw new Error('Invalid url')
+    }
+
+    NodeJS.start({ args: ['--disallow-code-generation-from-strings', '--disable-proto=throw', '--frozen-intrinsics'] })
   }
 
   // @ts-expect-error yep.

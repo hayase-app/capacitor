@@ -32,6 +32,8 @@ channel.on('port-init', _data => {
 
   if (id === 'init') {
     tclient ??= new TorrentClient(settings!, env.TMPDIR!)
+    // eslint-disable-next-line no-undef
+    global.tclient = tclient
     // re-exposing leaks memory, but not that much, so it's fine
     expose(tclient, createWrapper(channel))
   } else if (settings) {
