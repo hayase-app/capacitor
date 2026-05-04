@@ -251,6 +251,7 @@ if (!window.native) {
     torrentInfo: async (hash) => await (await torrent).torrentInfo(hash),
     peerInfo: async (hash) => await (await torrent).peerInfo(hash),
     fileInfo: async (hash) => await (await torrent).fileInfo(hash),
+    trackers: async (hash) => await (await torrent).trackers(hash),
     protocolStatus: async (hash) => await (await torrent).protocolStatus(hash),
     updateSettings: async (settings) => {
       store.set('torrentSettings', settings)
