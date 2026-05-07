@@ -6,7 +6,7 @@ import TorrentClient from 'torrent-client'
 
 import './serializers/error'
 
-import type { TorrentSettings } from 'native'
+import type { ClientSettings } from 'native'
 
 function createWrapper <T> (c: BridgeChannel<T>): Endpoint {
   return {
@@ -25,9 +25,9 @@ function createWrapper <T> (c: BridgeChannel<T>): Endpoint {
 let tclient: TorrentClient | undefined
 
 channel.on('port-init', _data => {
-  let settings: TorrentSettings & { path: string } | undefined
+  let settings: ClientSettings & { path: string } | undefined
   const { id, data } = _data as { id: string, data: unknown}
-  if (id === 'settings' || id === 'init') settings = data as TorrentSettings & { path: string }
+  if (id === 'settings' || id === 'init') settings = data as ClientSettings & { path: string }
   if (id === 'destroy') tclient?.destroy()
 
   if (id === 'init') {
