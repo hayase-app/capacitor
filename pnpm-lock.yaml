@@ -16,7 +16,7 @@ importers:
         version: 8.1.0(@capacitor/core@8.3.1)
       '@capacitor/assets':
         specifier: github:thaunknown/capacitor-assets
-        version: https://codeload.github.com/thaunknown/capacitor-assets/tar.gz/09ee7e21673f6ce17c677efe76739e5eb28fe908(@types/node@25.6.0)(encoding@0.1.13)(typescript@5.8.3)
+        version: git+https://git@github.com:thaunknown/capacitor-assets.git#09ee7e21673f6ce17c677efe76739e5eb28fe908(@types/node@25.6.0)(encoding@0.1.13)(typescript@5.8.3)
       '@capacitor/browser':
         specifier: ^8.0.0
         version: 8.0.3(@capacitor/core@8.3.1)
@@ -94,7 +94,7 @@ importers:
         version: 4.1.5
       torrent-client:
         specifier: github:hayase-app/torrent-client
-        version: https://codeload.github.com/hayase-app/torrent-client/tar.gz/9821d3703648318db58c5116c2a2d088112f696e(bare-url@2.4.2)
+        version: https://codeload.github.com/hayase-app/torrent-client/tar.gz/27fddc153108d8fb675f9ddb9f854e943e657575(bare-url@2.4.2)
       ts-loader:
         specifier: ^9.5.7
         version: 9.5.7(typescript@5.8.3)(webpack@5.106.2)
@@ -142,8 +142,8 @@ packages:
     peerDependencies:
       '@capacitor/core': '>=8.0.0'
 
-  '@capacitor/assets@https://codeload.github.com/thaunknown/capacitor-assets/tar.gz/09ee7e21673f6ce17c677efe76739e5eb28fe908':
-    resolution: {tarball: https://codeload.github.com/thaunknown/capacitor-assets/tar.gz/09ee7e21673f6ce17c677efe76739e5eb28fe908}
+  '@capacitor/assets@git+https://git@github.com:thaunknown/capacitor-assets.git#09ee7e21673f6ce17c677efe76739e5eb28fe908':
+    resolution: {commit: 09ee7e21673f6ce17c677efe76739e5eb28fe908, repo: git@github.com:thaunknown/capacitor-assets.git, type: git}
     version: 3.0.1
     engines: {node: '>=10.3.0'}
     hasBin: true
@@ -4295,8 +4295,8 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
 
-  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/9821d3703648318db58c5116c2a2d088112f696e:
-    resolution: {tarball: https://codeload.github.com/hayase-app/torrent-client/tar.gz/9821d3703648318db58c5116c2a2d088112f696e}
+  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/27fddc153108d8fb675f9ddb9f854e943e657575:
+    resolution: {tarball: https://codeload.github.com/hayase-app/torrent-client/tar.gz/27fddc153108d8fb675f9ddb9f854e943e657575}
     version: 1.0.0
 
   torrent-discovery@11.0.19:
@@ -4823,7 +4823,7 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.3.1
 
-  '@capacitor/assets@https://codeload.github.com/thaunknown/capacitor-assets/tar.gz/09ee7e21673f6ce17c677efe76739e5eb28fe908(@types/node@25.6.0)(encoding@0.1.13)(typescript@5.8.3)':
+  '@capacitor/assets@git+https://git@github.com:thaunknown/capacitor-assets.git#09ee7e21673f6ce17c677efe76739e5eb28fe908(@types/node@25.6.0)(encoding@0.1.13)(typescript@5.8.3)':
     dependencies:
       '@capacitor/cli': 5.7.8
       '@ionic/utils-array': 2.1.6
@@ -9720,7 +9720,7 @@ snapshots:
 
   toidentifier@1.0.1: {}
 
-  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/9821d3703648318db58c5116c2a2d088112f696e(bare-url@2.4.2):
+  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/27fddc153108d8fb675f9ddb9f854e943e657575(bare-url@2.4.2):
     dependencies:
       '@types/chromecast-caf-receiver': 6.0.26
       '@types/multicast-dns': 7.2.4
