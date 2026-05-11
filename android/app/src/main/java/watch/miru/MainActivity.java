@@ -8,20 +8,23 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Message;
+import android.util.Base64;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.webkit.WebChromeClient;
-import android.webkit.ValueCallback;
 import android.webkit.DownloadListener;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 import android.util.Log;
 
 import com.android.volley.RequestQueue;
@@ -37,6 +40,8 @@ import net.hampoelz.capacitor.nodejs.CapacitorNodeJSPlugin;
 import net.hampoelz.capacitor.nodejs.CapacitorNodeJS;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -172,6 +177,19 @@ public class MainActivity extends BridgeActivity {
     settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
     settings.setUseWideViewPort(true);
     settings.setLoadWithOverviewMode(true);
+
+    webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
+        try {
+        if (url != null && url.startsWith("data:")) {
+          handleDataDownload(url, mimeType);
+          return;
+        }
+
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+      } catch (Exception e) {
+        Log.e("Download", "Failed to open download URL", e);
+      }
+    });
 
     configureSystemBars();
 
@@ -538,5 +556,29 @@ public class MainActivity extends BridgeActivity {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  private void handleDataDownload(String url, String mimeType) throws Exception {
+    int commaIndex = url.indexOf(',');
+    if (commaIndex == -1) return;
+
+    String payload = url.substring(commaIndex + 1);
+    byte[] bytes = url.substring(5, commaIndex).contains(";base64")
+        ? Base64.decode(payload, Base64.DEFAULT)
+        : Uri.decode(payload).getBytes(StandardCharsets.UTF_8);
+
+    String extension = mimeType != null && mimeType.contains("/")
+        ? mimeType.substring(mimeType.indexOf('/') + 1)
+        : "bin";
+    String fileName = "download_" + System.currentTimeMillis() + "." + extension;
+
+    File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    downloadDir.mkdirs();
+    
+    try (FileOutputStream fos = new FileOutputStream(new File(downloadDir, fileName))) {
+      fos.write(bytes);
+    }
+
+    runOnUiThread(() -> Toast.makeText(this, "Downloaded: " + fileName, Toast.LENGTH_SHORT).show());
   }
 }

@@ -51,10 +51,10 @@
     "dev:android-port": "run-s dev:android dev:adb-port",
     "dev:start": "run-p dev:webpack dev:android-port",
     "dev:webpack": "webpack serve",
-    "dev:logcat": "adb logcat -s \"NodeJS-Engine,nodejs,app.hayase,AppUpdater,Capacitor\"",
+    "dev:logcat": "adb logcat -s \"NodeJS-Engine,nodejs,app.hayase,AppUpdater,Capacitor,Download\"",
     "dev:logcat-enable": "adb shell setprop persist.log.tag VERBOSE",
     "dev:logcat-disable": "adb shell setprop persist.log.tag S",
     "test:e2e": "cross-env NODE_ENV=production run-s build:web dev:android"
   },
-  "version": "6.4.37"
+  "version": "6.4.38"
 }
