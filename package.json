@@ -39,6 +39,11 @@
     "webpack-dev-server": "^5.2.3",
     "webpack-license-plugin": "^4.5.1"
   },
+  "pnpm": {
+    "overrides": {
+      "lt_donthave": "github:webtorrent/lt_donthave"
+    }
+  },
   "scripts": {
     "build:native": "docker build -f public/nodejs/Dockerfile -t nodejs-mobile-build . && docker run -v ${PWD}:/app/ -it nodejs-mobile-build:latest /bin/bash /app/public/nodejs/setup-deps.sh",
     "build:app": "cross-env NODE_ENV=production run-s build:web build:native build:assets",
@@ -56,5 +61,5 @@
     "dev:logcat-disable": "adb shell setprop persist.log.tag S",
     "test:e2e": "cross-env NODE_ENV=production run-s build:web dev:android"
   },
-  "version": "6.4.39"
+  "version": "6.4.40"
 }
