@@ -370,7 +370,7 @@ if (!window.native) {
       throw new Error('Invalid url')
     }
 
-    NodeJS.start({ args: ['--disallow-code-generation-from-strings', '--disable-proto=throw', '--frozen-intrinsics'] })
+    NodeJS.start({ args: ['--disallow-code-generation-from-strings', '--disable-proto=throw', '--frozen-intrinsics', '--openssl-legacy-provider'] })
   }
 
   // @ts-expect-error yep.

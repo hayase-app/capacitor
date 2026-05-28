@@ -92,7 +92,8 @@ public class MainActivity extends BridgeActivity {
       String[] nodeArgs = new String[] {
         "--disallow-code-generation-from-strings",
         "--disable-proto=throw",
-        "--frozen-intrinsics"
+        "--frozen-intrinsics",
+        "--openssl-legacy-provider"
       };
 
       Method m = CapacitorNodeJS.class.getDeclaredMethod(
