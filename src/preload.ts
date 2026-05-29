@@ -351,6 +351,25 @@ if (!window.native) {
       }
     }
   } else {
+    const updateCheck = (async () => {
+      const [ver, res] = await Promise.all([version, fetch('https://api.hayase.watch/latest')])
+
+      const json = await res.json()
+
+      for (const key of Object.keys(json)) {
+        const ipa = key.lastIndexOf('.ipa')
+        if (ipa === -1) continue
+        const version = key.slice(key.lastIndexOf('-') + 1, ipa)
+        if (version !== ver) {
+          if (confirm('New version is available! Install now?')) {
+            Browser.open({ url: 'https://hayase.watch/download' })
+          }
+          return
+        }
+      }
+
+      throw new Error('No update available')
+    })()
     native.authAL = async (url: string) => {
       const { url: res } = await authsession.authLegacy({ url, callbackScheme: 'hayase' })
       const { hash } = new URL(res)
@@ -369,6 +388,14 @@ if (!window.native) {
       }
       throw new Error('Invalid url')
     }
+    native.updateProgress = async (fn) => {
+      try {
+        await updateCheck
+        fn(100)
+      } catch {}
+    }
+    native.updateReady = () => updateCheck
+    native.updateAndRestart = () => Browser.open({ url: 'https://hayase.watch/download' })
 
     NodeJS.start({ args: ['--disallow-code-generation-from-strings', '--disable-proto=throw', '--frozen-intrinsics', '--openssl-legacy-provider'] })
   }

@@ -17,7 +17,7 @@
     "@capawesome-team/capacitor-android-foreground-service": "^8.0.0",
     "@types/webpack": "^5.28.5",
     "abslink": "^1.2.2",
-    "bittorrent-tracker": "11.2.2",
+    "bittorrent-tracker": "11.2.3",
     "capacitor-intent-uri": "^0.0.2",
     "capacitor-nodejs": "github:hayase-app/capacitor-nodejs",
     "concurrently": "^9.2.1",
@@ -25,7 +25,7 @@
     "cordova-plugin-pip": "^0.0.2",
     "cordova-res": "^0.15.4",
     "cross-env": "^10.1.0",
-    "eslint-config-standard-universal": "^1.0.9",
+    "eslint-config-standard-universal": "^1.0.10",
     "native": "github:hayase-app/native",
     "node-fetch": "^3.3.2",
     "node-gyp-build-mobile": "^4.6.0-3",
@@ -38,11 +38,6 @@
     "webpack-cli": "^7.0.2",
     "webpack-dev-server": "^5.2.3",
     "webpack-license-plugin": "^4.5.1"
-  },
-  "pnpm": {
-    "overrides": {
-      "webtorrent": "github:thaunknown/webtorrent#utpspeed"
-    }
   },
   "scripts": {
     "build:native": "docker build -f public/nodejs/Dockerfile -t nodejs-mobile-build . && docker run -v ${PWD}:/app/ -it nodejs-mobile-build:latest /bin/bash /app/public/nodejs/setup-deps.sh",
