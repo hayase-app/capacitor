@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  lt_donthave: github:webtorrent/lt_donthave
+  webtorrent: github:thaunknown/webtorrent#utpspeed
 
 importers:
 
@@ -2950,9 +2950,8 @@ packages:
     resolution: {integrity: sha512-5OUtoiVIGU4VXBOshidmtOsvBIvcQR6FD/RzWSvaeHyxCGB+PCUCu+52lqMfdc0h/2CLvHhZS4TwUmMQrrMbBQ==}
     engines: {node: '>= 0.4.0'}
 
-  lt_donthave@https://codeload.github.com/webtorrent/lt_donthave/tar.gz/0dc69781877fb6ab04080bcbfcf124c41db3191c:
-    resolution: {tarball: https://codeload.github.com/webtorrent/lt_donthave/tar.gz/0dc69781877fb6ab04080bcbfcf124c41db3191c}
-    version: 2.0.7
+  lt_donthave@2.0.7:
+    resolution: {integrity: sha512-FdfetmgzUr0IC2ZXHaOhAMEsvw8BFo7kDM7JzfYsJ5pO5+xzjfZIPdLSQWE4+/UTlQA7D8IU5ZJ0LTuLE4BRBQ==}
     engines: {node: '>=12.20.0'}
 
   magic-string@0.30.17:
@@ -4655,8 +4654,9 @@ packages:
     resolution: {integrity: sha512-OqedPIGOfsDlo31UNwYbCFMSaO9m9G/0faIHj5/dZFDMFqPTcx6UwqyOy3COEaEOg/9VsGIpdqn62W5KhoKSpg==}
     engines: {node: '>=0.8.0'}
 
-  webtorrent@3.0.14:
-    resolution: {integrity: sha512-z4M1CawI5X1NIrcZuZUmOTDBidJdiewgxA5hukMffbbGVV4q1gs+ujCbwA7iX1XOsMb/xgVWCcXfLQwBhp1zag==}
+  webtorrent@https://codeload.github.com/thaunknown/webtorrent/tar.gz/3b2ace02fce0e24662015caefe6b21ddddf7b8cd:
+    resolution: {tarball: https://codeload.github.com/thaunknown/webtorrent/tar.gz/3b2ace02fce0e24662015caefe6b21ddddf7b8cd}
+    version: 3.0.15
     engines: {node: '>=22'}
 
   whatwg-url@5.0.0:
@@ -6161,7 +6161,7 @@ snapshots:
 
   bare-stream@2.13.0(bare-events@2.8.2):
     dependencies:
-      streamx: 2.25.0
+      streamx: 2.26.0
       teex: 1.0.1
     optionalDependencies:
       bare-events: 2.8.2
@@ -6294,7 +6294,7 @@ snapshots:
     dependencies:
       '@thaunknown/simple-peer': 10.1.1
       '@thaunknown/simple-websocket': 9.1.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      bencode: 4.0.0
+      bencode: 4.0.1
       bittorrent-peerid: 2.0.2
       chrome-dgram: 3.0.6
       compact2string: 1.4.1
@@ -6309,7 +6309,7 @@ snapshots:
       run-parallel: 1.2.0
       run-series: 1.1.9
       socks: 2.8.7
-      string2compact: 2.0.1
+      string2compact: 2.0.2
       uint8-util: 2.2.6
       unordered-array-remove: 1.0.2
       ws: 8.20.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
@@ -8251,7 +8251,7 @@ snapshots:
     dependencies:
       inherits: 2.0.4
 
-  lt_donthave@https://codeload.github.com/webtorrent/lt_donthave/tar.gz/0dc69781877fb6ab04080bcbfcf124c41db3191c:
+  lt_donthave@2.0.7:
     dependencies:
       debug: 4.4.3
       unordered-array-remove: 1.0.2
@@ -9506,7 +9506,7 @@ snapshots:
   speed-limiter@1.0.2:
     dependencies:
       limiter: 1.1.5
-      streamx: 2.25.0
+      streamx: 2.26.0
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
@@ -9746,7 +9746,7 @@ snapshots:
 
   teex@1.0.1:
     dependencies:
-      streamx: 2.25.0
+      streamx: 2.26.0
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
@@ -9836,7 +9836,7 @@ snapshots:
       nzb-file: 1.1.16
       nzb-parser: 1.0.3
       protobufjs: 8.0.1
-      webtorrent: 3.0.14(bare-url@2.4.2)
+      webtorrent: https://codeload.github.com/thaunknown/webtorrent/tar.gz/3b2ace02fce0e24662015caefe6b21ddddf7b8cd(bare-url@2.4.2)
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -10050,7 +10050,7 @@ snapshots:
 
   ut_metadata@5.0.1:
     dependencies:
-      bencode: 4.0.0
+      bencode: 4.0.1
       bitfield: 5.0.1
       debug: 4.4.3
       uint8-util: 2.2.6
@@ -10239,7 +10239,7 @@ snapshots:
 
   websocket-extensions@0.1.4: {}
 
-  webtorrent@3.0.14(bare-url@2.4.2):
+  webtorrent@https://codeload.github.com/thaunknown/webtorrent/tar.gz/3b2ace02fce0e24662015caefe6b21ddddf7b8cd(bare-url@2.4.2):
     dependencies:
       '@silentbot1/nat-api': 0.4.9
       '@thaunknown/simple-peer': 10.1.1
@@ -10260,7 +10260,7 @@ snapshots:
       immediate-chunk-store: 2.2.0
       join-async-iterator: 1.1.1
       load-ip-set: 3.0.2
-      lt_donthave: https://codeload.github.com/webtorrent/lt_donthave/tar.gz/0dc69781877fb6ab04080bcbfcf124c41db3191c
+      lt_donthave: 2.0.7
       memory-chunk-store: 1.3.5
       mime: 3.0.0
       once: 1.4.0
