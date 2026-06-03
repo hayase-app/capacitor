@@ -1,12 +1,10 @@
 package app.hayase;
 
-import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
@@ -18,7 +16,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationChannelCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -82,13 +79,16 @@ public class MediaNotificationService extends Service {
     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
     notificationManager.createNotificationChannel(channel);
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      startForeground(2, generateNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
-    } else {
-      startForeground(2, generateNotification());
+    try {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        startForeground(2, generateNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
+      } else {
+        startForeground(2, generateNotification());
+      }
+      Log.i("MediaNotification", "Created notification");
+    } catch (Exception e) {
+      Log.e("MediaNotification", "Failed to start foreground, continuing without notification", e);
     }
-
-    Log.i("MediaNotification", "Created notification");
 
     return START_STICKY;
   }
@@ -139,10 +139,6 @@ public class MediaNotificationService extends Service {
 
   private void updateNotification() {
     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-    if (ActivityCompat.checkSelfPermission(this,
-        Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-      return;
-    }
     notificationManager.notify(2, generateNotification());
   }
 

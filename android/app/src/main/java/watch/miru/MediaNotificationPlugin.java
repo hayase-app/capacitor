@@ -47,9 +47,13 @@ public class MediaNotificationPlugin extends Plugin {
       current.setCallback(new MediaCallback());
       current.setActive(true);
 
-      Intent service = new Intent(this.getContext(), MediaNotificationService.class);
-      service.putExtra("token", current.getSessionToken());
-      getContext().startService(service);
+      try {
+        Intent service = new Intent(this.getContext(), MediaNotificationService.class);
+        service.putExtra("token", current.getSessionToken());
+        getContext().startService(service);
+      } catch (Exception e) {
+        Log.e("MediaNotification", "Failed to start notification service", e);
+      }
     }
 
     return current;
@@ -73,7 +77,7 @@ public class MediaNotificationPlugin extends Plugin {
       lastUrl = url;
       BitmapNetworkRequest request = new BitmapNetworkRequest(Request.Method.GET, url, response -> {
         currentImage = response;
-        updateSessionMetadata(call); // Am I running on another thread? Is this safe?
+        updateSessionMetadata(call);
         call.successCallback(new PluginResult());
       }, error -> Log.e("MediaNotification", "Failed to load image from " + url, error));
       ((MainActivity) this.getBridge().getActivity()).queue.add(request);
@@ -85,7 +89,7 @@ public class MediaNotificationPlugin extends Plugin {
   }
 
   private void updateSessionMetadata(PluginCall call) {
-    MediaMetadataCompat.Builder metadata = new MediaMetadataCompat.Builder() // This might be on the wrong thread?
+    MediaMetadataCompat.Builder metadata = new MediaMetadataCompat.Builder()
         .putString(METADATA_KEY_TITLE, call.getString("title"))
         .putString(METADATA_KEY_DISPLAY_TITLE, call.getString("title"))
         .putString(METADATA_KEY_DISPLAY_DESCRIPTION, call.getString("description"))
