@@ -44,7 +44,7 @@ public class AccentColorPlugin extends Plugin {
       try {
         int colorId = Resources.getSystem().getIdentifier("system_accent1_500", "color", "android");
         if (colorId != 0) {
-          return Resources.getSystem().getColor(colorId, null);
+          return getContext().getResources().getColor(colorId, getContext().getTheme());
         }
       } catch (Exception ignored) {}
 
