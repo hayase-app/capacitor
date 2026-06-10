@@ -137,6 +137,7 @@ public class MainActivity extends BridgeActivity {
     // registerPlugin(EngagePlugin.class);
     registerPlugin(FilesystemPlugin.class);
     registerPlugin(CorsProxyPlugin.class);
+    registerPlugin(AccentColorPlugin.class);
 
     super.onCreate(savedInstanceState);
 

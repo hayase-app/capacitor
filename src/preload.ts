@@ -292,6 +292,15 @@ if (!window.native) {
   }
 
   if (isAndroid) {
+    native.accentColor = async () => {
+      try {
+        // @ts-expect-error plugin is native-only
+        const { color } = await Capacitor.Plugins.AccentColor.getAccentColor({ fallback: 'AccentColor' })
+        return color
+      } catch {
+        return 'AccentColor'
+      }
+    }
     native.setActionHandler = (name, cb) => MediaSessionPlugin.addListener(name, cb!)
     native.setMediaSession = (session, _id, duration) => MediaSessionPlugin.setMediaSession({ ...session, duration })
     native.setPositionState = (state, paused) => MediaSessionPlugin.setPlaybackState({
