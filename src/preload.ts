@@ -406,7 +406,7 @@ if (!window.native) {
     native.updateReady = () => updateCheck
     native.updateAndRestart = () => Browser.open({ url: 'https://hayase.watch/download' })
 
-    NodeJS.start({ args: ['--disallow-code-generation-from-strings', '--disable-proto=throw', '--frozen-intrinsics', '--openssl-legacy-provider'] })
+    NodeJS.start({ args: ['--disallow-code-generation-from-strings', '--disable-proto=throw', '--frozen-intrinsics'] })
   }
 
   // @ts-expect-error yep.
