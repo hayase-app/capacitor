@@ -88,7 +88,7 @@ const config = [
       }),
       new LicensePlugin({
         outputFilename: 'index.js.LICENSE.txt',
-        excludedPackageTest: (packageName) => packageName === 'torrent-client',
+        excludedPackageTest: (packageName) => packageName === 'torrent-client' || packageName === 'sax',
         licenseOverrides: {
           'compact2string@1.4.1': 'BSD-3-Clause'
         },

@@ -3,15 +3,15 @@
   "private": true,
   "packageManager": "pnpm@10.28.1",
   "devDependencies": {
-    "@capacitor/android": "^8.0.0",
+    "@capacitor/android": "^8.4.0",
     "@capacitor/app": "^8.0.0",
     "@capacitor/assets": "github:thaunknown/capacitor-assets",
     "@capacitor/browser": "^8.0.0",
-    "@capacitor/cli": "^8.0.0",
-    "@capacitor/core": "^8.0.0",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
     "@capacitor/device": "^8.0.0",
-    "@capacitor/ios": "^8.3.1",
-    "@capacitor/local-notifications": "^8.0.0",
+    "@capacitor/ios": "^8.4.0",
+    "@capacitor/local-notifications": "^8.2.0",
     "@capacitor/screen-orientation": "^8.0.1",
     "@capacitor/share": "8.0.1",
     "@capawesome-team/capacitor-android-foreground-service": "^8.0.0",
@@ -20,7 +20,7 @@
     "bittorrent-tracker": "11.2.3",
     "capacitor-intent-uri": "^0.0.2",
     "capacitor-nodejs": "github:hayase-app/capacitor-nodejs",
-    "concurrently": "^10.0.1",
+    "concurrently": "^10.0.3",
     "copy-webpack-plugin": "^14.0.0",
     "cordova-plugin-pip": "^0.0.2",
     "cordova-res": "^0.15.4",
@@ -32,7 +32,7 @@
     "nodejs-mobile-gyp": "^0.4.0",
     "npm-run-all": "^4.1.5",
     "torrent-client": "github:hayase-app/torrent-client",
-    "ts-loader": "^9.6.0",
+    "ts-loader": "^9.6.1",
     "ts-node": "^10.9.2",
     "webpack": "^5.107.2",
     "webpack-cli": "^7.0.3",
@@ -56,5 +56,5 @@
     "dev:logcat-disable": "adb shell setprop persist.log.tag S",
     "test:e2e": "cross-env NODE_ENV=production run-s build:web dev:android"
   },
-  "version": "6.4.47"
+  "version": "6.4.48"
 }
