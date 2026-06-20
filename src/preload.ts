@@ -16,6 +16,7 @@ import { type ChannelListenerCallback, NodeJS } from 'capacitor-nodejs'
 import authsession from './authsession'
 import MediaSessionPlugin from './mediasession'
 import fs, { Directory } from './storage'
+// import { register as registerWakeLock } from './wakelock'
 import './serializers/error'
 // import { SafeArea } from 'capacitor-plugin-safe-area'
 
@@ -66,15 +67,12 @@ if (!window.native) {
     return parsed
   }
 
-  // cordova screen orientation plugin is also used, and it patches global screen.orientation.lock
-
   // hook into pip request, and use our own pip implementation, then instantly report exit pip
   // this is more like DOM PiP, rather than video PiP
   HTMLVideoElement.prototype.requestPictureInPicture = function () {
     // @ts-expect-error global
-    PictureInPicture.enter(this.videoWidth, this.videoHeight, success => {
+    PictureInPicture.enter(this.videoWidth, this.videoHeight, () => {
       this.dispatchEvent(new Event('leavepictureinpicture'))
-      if (success) document.querySelector('#episodeListTarget')?.requestFullscreen()
     }, err => {
       this.dispatchEvent(new Event('leavepictureinpicture'))
       console.error(err)
@@ -292,6 +290,7 @@ if (!window.native) {
   }
 
   if (isAndroid) {
+    // registerWakeLock()
     native.accentColor = async () => {
       try {
         // @ts-expect-error plugin is native-only
