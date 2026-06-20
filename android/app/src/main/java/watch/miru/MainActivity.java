@@ -180,6 +180,12 @@ public class MainActivity extends BridgeActivity {
     settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
     settings.setUseWideViewPort(true);
     settings.setLoadWithOverviewMode(true);
+    settings.setTextZoom(100);
+    settings.setMinimumFontSize(0);
+    settings.setMinimumLogicalFontSize(0);
+    settings.setAllowFileAccess(false);
+    settings.setAllowContentAccess(false);
+    settings.setSafeBrowsingEnabled(true);
 
     webView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
         try {
