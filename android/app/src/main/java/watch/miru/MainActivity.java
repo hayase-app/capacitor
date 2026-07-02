@@ -18,6 +18,8 @@ import android.view.WindowInsetsController;
 import android.webkit.WebChromeClient;
 import android.webkit.DownloadListener;
 import android.webkit.ValueCallback;
+import android.annotation.TargetApi;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -356,6 +358,34 @@ public class MainActivity extends BridgeActivity {
         }
       }
 
+      private void showErrorPage(WebView view) {
+        String errorHtml = "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1'>"
+            + "<style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;background:#000;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:24px}"
+            + ".msg{color:#fff;text-align:center;max-width:400px}.msg h1{font-size:20px;font-weight:600;margin-bottom:12px;line-height:1.4}"
+            + ".msg p{font-size:15px;color:#999;line-height:1.5}</style></head><body>"
+            + "<div class='msg'><h1>First load requires an internet connection</h1>"
+            + "<p>Please connect to the internet and restart the app to set up Hayase for the first time.</p></div></body></html>";
+        view.loadDataWithBaseURL(null, errorHtml, "text/html", "UTF-8", null);
+      }
+
+      @Override
+      public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+        if (failingUrl != null && (failingUrl.startsWith("https://hayase.app") || failingUrl.startsWith("http://localhost"))) {
+          showErrorPage(view);
+        }
+      }
+
+      @Override
+      @TargetApi(android.os.Build.VERSION_CODES.M)
+      public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+        if (request.isForMainFrame()) {
+          String url = request.getUrl().toString();
+          if (url != null && (url.startsWith("https://hayase.app") || url.startsWith("http://localhost"))) {
+            showErrorPage(view);
+          }
+        }
+      }
+
       @Override
       public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -387,8 +417,6 @@ public class MainActivity extends BridgeActivity {
         mCustomView = view;
         mCustomViewCallback = callback;
 
-        configureFullscreenBars(true);
-
         // Add the custom view to the main content view, not decor view, to preserve
         // insets
         ViewGroup contentView = findViewById(android.R.id.content);
@@ -404,7 +432,6 @@ public class MainActivity extends BridgeActivity {
         }
         ((ViewGroup) mCustomView.getParent()).removeView(mCustomView);
         mCustomView = null;
-        configureFullscreenBars(false);
         if (mCustomViewCallback != null) {
           mCustomViewCallback.onCustomViewHidden();
         }
@@ -516,38 +543,23 @@ public class MainActivity extends BridgeActivity {
       getWindow().setNavigationBarContrastEnforced(false);
     }
 
-    configureFullscreenBars(false);
-  }
-
-    private void configureFullscreenBars(boolean fullscreen) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      WindowInsetsControllerCompat controller =
-          WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+      WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
       if (controller != null) {
+        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
         controller.hide(WindowInsetsCompat.Type.statusBars());
-        if (fullscreen) {
-          controller.hide(WindowInsetsCompat.Type.navigationBars());
-        } else {
-          controller.show(WindowInsetsCompat.Type.navigationBars());
-        }
+        controller.show(WindowInsetsCompat.Type.navigationBars());
       }
       return;
     }
 
     View decorView = getWindow().getDecorView();
-    if (fullscreen) {
-      decorView.setSystemUiVisibility(
-          View.SYSTEM_UI_FLAG_FULLSCREEN
-              | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-              | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-              | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-              | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-    } else {
-      decorView.setSystemUiVisibility(
-          View.SYSTEM_UI_FLAG_FULLSCREEN
-              | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-              | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-    }
+    decorView.setSystemUiVisibility(
+      View.SYSTEM_UI_FLAG_FULLSCREEN
+      | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+      | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+      | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+    );
   }
 
   private void injectJavaScript(WebView webView) {
