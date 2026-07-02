@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -227,6 +228,7 @@ public class MainActivity extends BridgeActivity {
         if (url != null && (url.startsWith("https://hayase.app") || url.startsWith("http://localhost"))) {
           injectJavaScript(view);
           configureSystemBars();
+          getSharedPreferences("hayase", MODE_PRIVATE).edit().putBoolean("sw_installed", true).apply();
         }
       }
 
@@ -371,7 +373,10 @@ public class MainActivity extends BridgeActivity {
       @Override
       public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         if (failingUrl != null && (failingUrl.startsWith("https://hayase.app") || failingUrl.startsWith("http://localhost"))) {
-          showErrorPage(view);
+          SharedPreferences prefs = getSharedPreferences("hayase", MODE_PRIVATE);
+          if (!prefs.getBoolean("sw_installed", false)) {
+            showErrorPage(view);
+          }
         }
       }
 
@@ -381,7 +386,10 @@ public class MainActivity extends BridgeActivity {
         if (request.isForMainFrame()) {
           String url = request.getUrl().toString();
           if (url != null && (url.startsWith("https://hayase.app") || url.startsWith("http://localhost"))) {
-            showErrorPage(view);
+            SharedPreferences prefs = getSharedPreferences("hayase", MODE_PRIVATE);
+            if (!prefs.getBoolean("sw_installed", false)) {
+              showErrorPage(view);
+            }
           }
         }
       }
