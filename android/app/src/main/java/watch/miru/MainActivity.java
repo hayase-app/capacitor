@@ -65,6 +65,7 @@ public class MainActivity extends BridgeActivity {
 
   private static final int FILE_CHOOSER_REQUEST_CODE = 61453;
   private ValueCallback<Uri[]> filePathCallback;
+  private boolean isFullscreen = false;
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -431,6 +432,8 @@ public class MainActivity extends BridgeActivity {
         contentView.addView(mCustomView, new RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.MATCH_PARENT));
+
+        setFullscreenMode(true);
       }
 
       @Override
@@ -443,6 +446,8 @@ public class MainActivity extends BridgeActivity {
         if (mCustomViewCallback != null) {
           mCustomViewCallback.onCustomViewHidden();
         }
+
+        setFullscreenMode(false);
       }
 
       @Override
@@ -551,23 +556,40 @@ public class MainActivity extends BridgeActivity {
       getWindow().setNavigationBarContrastEnforced(false);
     }
 
+    setFullscreenMode(isFullscreen);
+  }
+
+  private void setFullscreenMode(boolean fullscreen) {
+    isFullscreen = fullscreen;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
       WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-      if (controller != null) {
-        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+      if (controller == null) return;
+
+      if (fullscreen) {
+        controller.setSystemBarsBehavior(
+          WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
         controller.hide(WindowInsetsCompat.Type.statusBars());
+        controller.hide(WindowInsetsCompat.Type.navigationBars());
+      } else {
+        controller.show(WindowInsetsCompat.Type.statusBars());
         controller.show(WindowInsetsCompat.Type.navigationBars());
       }
       return;
     }
 
     View decorView = getWindow().getDecorView();
-    decorView.setSystemUiVisibility(
-      View.SYSTEM_UI_FLAG_FULLSCREEN
-      | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-      | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-      | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-    );
+    if (fullscreen) {
+      decorView.setSystemUiVisibility(
+        View.SYSTEM_UI_FLAG_FULLSCREEN
+        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    } else {
+      decorView.setSystemUiVisibility(
+        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+    }
   }
 
   private void injectJavaScript(WebView webView) {
