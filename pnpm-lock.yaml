@@ -79,7 +79,7 @@ importers:
         version: 1.0.10(@typescript-eslint/parser@8.60.0(eslint@9.39.4)(typescript@6.0.3))(ts-node@10.9.2(@types/node@25.9.3)(typescript@6.0.3))
       native:
         specifier: github:hayase-app/native
-        version: https://codeload.github.com/hayase-app/native/tar.gz/e166ef06ea2ad3434345aebbff81facf9381d484
+        version: https://codeload.github.com/hayase-app/native/tar.gz/fb71ee56bcaf47c1823c412b47e7c94be5e8a2d9
       node-fetch:
         specifier: ^3.3.2
         version: 3.3.2
@@ -3273,8 +3273,8 @@ packages:
     engines: {node: '>=16.0.0'}
     hasBin: true
 
-  native@https://codeload.github.com/hayase-app/native/tar.gz/e166ef06ea2ad3434345aebbff81facf9381d484:
-    resolution: {tarball: https://codeload.github.com/hayase-app/native/tar.gz/e166ef06ea2ad3434345aebbff81facf9381d484}
+  native@https://codeload.github.com/hayase-app/native/tar.gz/fb71ee56bcaf47c1823c412b47e7c94be5e8a2d9:
+    resolution: {tarball: https://codeload.github.com/hayase-app/native/tar.gz/fb71ee56bcaf47c1823c412b47e7c94be5e8a2d9}
     version: 1.0.0
 
   natural-compare@1.4.0:
@@ -8882,7 +8882,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  native@https://codeload.github.com/hayase-app/native/tar.gz/e166ef06ea2ad3434345aebbff81facf9381d484:
+  native@https://codeload.github.com/hayase-app/native/tar.gz/fb71ee56bcaf47c1823c412b47e7c94be5e8a2d9:
     dependencies:
       '@types/chromecast-caf-receiver': 6.0.26
 
@@ -10295,7 +10295,7 @@ snapshots:
       fast-xml-parser: 5.9.0
       matroska-metadata: 1.0.12
       multicast-dns: 7.2.5
-      native: https://codeload.github.com/hayase-app/native/tar.gz/e166ef06ea2ad3434345aebbff81facf9381d484
+      native: https://codeload.github.com/hayase-app/native/tar.gz/fb71ee56bcaf47c1823c412b47e7c94be5e8a2d9
       network-address: 1.1.2
       nzb-file: 1.1.18
       nzb-parser: 1.0.4
