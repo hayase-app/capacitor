@@ -333,6 +333,10 @@ if (!window.native) {
       const res = await IntentUri.openUri({ url: 'intent:#Intent;action=android.settings.SETTINGS;end;' })
       if (!res.completed) throw new Error(res.message)
     }
+    native.openUIDevtools = async () => {
+      const res = await IntentUri.openUri({ url: 'intent:#Intent;action=com.android.webview.SHOW_DEV_UI;end;' })
+      if (!res.completed) throw new Error(res.message)
+    }
     native.castPlay = async (host, hash, id, media) => {
       let notiPermission = await ForegroundService.checkPermissions()
       if (notiPermission.display === 'prompt') notiPermission = await ForegroundService.requestPermissions()
