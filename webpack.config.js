@@ -39,7 +39,7 @@ const config = [
       ]
     },
     externals: {
-      'utp-native': 'commonjs utp-native',
+      '@thaunknown/utp-native': 'commonjs @thaunknown/utp-native',
       bridge: 'commonjs bridge',
       'node-gyp-build': 'commonjs node-gyp-build',
       '@thaunknown/yencode': 'commonjs @thaunknown/yencode'
@@ -47,6 +47,9 @@ const config = [
     resolve: {
       aliasFields: [],
       extensions: ['.ts', '.tsx', '.js', '.json'],
+      extensionAlias: {
+        '.js': ['.ts', '.js']
+      },
       mainFields: ['module', 'main', 'node'],
       alias: {
         wrtc: false,

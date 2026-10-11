@@ -127,11 +127,14 @@ if (!window.native) {
       torrentStreamedDownload: true,
       torrentSpeed: 40,
       maxConns: 50,
+      connectionBudget: 120,
       torrentPort: 0,
       dhtPort: 0,
       torrentPeX: false
     }
   }
+
+  const sID = '1'
 
   class Store {
     data = parseDataFile()
@@ -237,7 +240,9 @@ if (!window.native) {
     checkAvailableSpace: async () => await (await torrent).checkAvailableSpace(),
     checkIncomingConnections: async (port) => await (await torrent).checkIncomingConnections(port),
     updatePeerCounts: async (hashes) => await (await torrent).scrape(hashes),
-    playTorrent: async (id, mediaID, episode) => await (await torrent).playTorrent(id, mediaID, episode),
+    addTorrent: async (id, mediaID, episode, background) => await (await torrent).playTorrent(id, mediaID, episode, sID, background),
+    removeBackgroundTorrents: async (hashes) => await (await torrent).removeBackgroundTorrents(hashes),
+    activeTorrents: async () => await (await torrent).activeTorrents(),
     rescanTorrents: async (hashes) => await (await torrent).rescanTorrents(hashes),
     deleteTorrents: async (hashes) => await (await torrent).deleteTorrents(hashes),
     library: async () => await (await torrent).library(),

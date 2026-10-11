@@ -3,8 +3,8 @@
   "private": true,
   "dependencies": {
     "@thaunknown/yencode": "^1.5.5",
-    "fs-native-extensions": "^1.2.7",
-    "utp-native": "^2.5.3"
+    "fs-native-extensions": "^1.5.1",
+    "@thaunknown/utp-native": "^2.5.7"
   },
   "version": "1.0.0",
   "main": "./index.js"

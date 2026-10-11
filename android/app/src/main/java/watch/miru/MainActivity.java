@@ -135,6 +135,25 @@ public class MainActivity extends BridgeActivity {
   }
 
   @Override
+  public boolean dispatchKeyEvent(android.view.KeyEvent event) {
+    WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+
+    boolean isPopupOpen = false;
+    for (Dialog dialog : popupDialogs.values()) {
+      if (dialog.isShowing()) {
+        isPopupOpen = true;
+        break;
+      }
+    }
+
+    if (!isPopupOpen && !isFullscreen && webView != null && !webView.hasFocus()) {
+      webView.requestFocus();
+    }
+
+    return super.dispatchKeyEvent(event);
+  }
+
+  @Override
   public void onCreate(Bundle savedInstanceState) {
     this.queue = Volley.newRequestQueue(this);
     registerPlugin(MediaNotificationPlugin.class);
@@ -162,6 +181,9 @@ public class MainActivity extends BridgeActivity {
 
     final WebView webView = getBridge().getWebView();
     webView.setBackgroundColor(Color.TRANSPARENT);
+    webView.setFocusable(true);
+    webView.setFocusableInTouchMode(true);
+    webView.requestFocus();
     View webViewParent = (View) webView.getParent();
     if (webViewParent != null) {
       webViewParent.setBackgroundColor(Color.TRANSPARENT);
@@ -448,6 +470,10 @@ public class MainActivity extends BridgeActivity {
         }
 
         setFullscreenMode(false);
+        WebView mainWebView = getBridge() != null ? getBridge().getWebView() : null;
+        if (mainWebView != null) {
+          mainWebView.requestFocus();
+        }
       }
 
       @Override
@@ -496,6 +522,7 @@ public class MainActivity extends BridgeActivity {
         dialog.setOnDismissListener(dialogInterface -> {
           popupWebView.destroy();
           popupDialogs.remove(popupWebView);
+          view.requestFocus();
         });
 
         // The system needs a WebView to be returned for the window creation.
