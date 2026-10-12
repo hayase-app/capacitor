@@ -1,4 +1,3 @@
-/* globals PictureInPicture */
 import { App } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { Capacitor, SystemBars, SystemBarType } from '@capacitor/core'
@@ -65,30 +64,6 @@ if (!window.native) {
     if (parsed.target === 'donate') Browser.open({ url: 'https://github.com/sponsors/ThaUnknown/' })
 
     return parsed
-  }
-
-  // hook into pip request, and use our own pip implementation, then instantly report exit pip
-  // this is more like DOM PiP, rather than video PiP
-  HTMLVideoElement.prototype.requestPictureInPicture = function () {
-    // @ts-expect-error global
-    PictureInPicture.enter(this.videoWidth, this.videoHeight, () => {
-      this.dispatchEvent(new Event('leavepictureinpicture'))
-    }, err => {
-      this.dispatchEvent(new Event('leavepictureinpicture'))
-      console.error(err)
-    })
-
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this
-
-    return Promise.resolve({
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      get width () { return self.videoWidth },
-      get height () { return self.videoHeight },
-      onresize: null,
-      dispatchEvent: () => false
-    })
   }
 
   function createWrapper (channel: typeof NodeJS): Endpoint {
