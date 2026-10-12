@@ -414,6 +414,13 @@ if (!window.native) {
     }
     native.updateReady = () => updateCheck
     native.updateAndRestart = () => Browser.open({ url: 'https://hayase.watch/download' })
+    native.setPlayBackState = async (state) => {
+      navigator.mediaSession.playbackState = state
+      try {
+        // @ts-expect-error plugin is native-only
+        await Capacitor.Plugins.AudioSession.setActive({ active: state === 'playing' })
+      } catch {}
+    }
 
     NodeJS.start({ args: ['--disallow-code-generation-from-strings', '--disable-proto=throw', '--frozen-intrinsics'] })
   }

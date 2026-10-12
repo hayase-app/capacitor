@@ -15,9 +15,16 @@ import static android.support.v4.media.session.PlaybackStateCompat.ACTION_SKIP_T
 import static android.support.v4.media.session.PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
 import static android.support.v4.media.session.PlaybackStateCompat.ACTION_STOP;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ResultReceiver;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -39,6 +46,12 @@ public class MediaNotificationPlugin extends Plugin {
   private MediaSessionCompat current = null;
   private String lastUrl = null;
   private Bitmap currentImage = null;
+  private AudioManager audioManager = null;
+  private AudioFocusRequest audioFocusRequest = null;
+  private boolean hasAudioFocus = false;
+  private boolean resumeOnFocusGain = false;
+  private int lastPlaybackState = PlaybackStateCompat.STATE_NONE;
+  private final AudioManager.OnAudioFocusChangeListener focusChangeListener = this::onAudioFocusChange;
 
   private MediaSessionCompat getSession() {
     if (current == null) {
@@ -61,11 +74,106 @@ public class MediaNotificationPlugin extends Plugin {
 
   @Override
   protected void handleOnDestroy() {
+    abandonAudioFocus();
     if (current != null) {
       getContext().stopService(new Intent(this.getContext(), MediaNotificationService.class));
       current.release();
       current = null;
     }
+  }
+
+  // Take audio focus so Android pauses other apps, the same way a native media
+  // player does. The Web Audio output of the custom player does not request
+  // focus by itself.
+  private void requestAudioFocus() {
+    if (hasAudioFocus) {
+      return;
+    }
+    AudioManager manager = getAudioManager();
+    if (manager == null) {
+      return;
+    }
+
+    int result;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      if (audioFocusRequest == null) {
+        AudioAttributes attributes = new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
+            .build();
+        // Transient focus tells other apps to pause and expect a resume. On
+        // abandon the framework returns focus to them, so background audio
+        // starts again when the player pauses.
+        audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+            .setAudioAttributes(attributes)
+            .setOnAudioFocusChangeListener(focusChangeListener, new Handler(Looper.getMainLooper()))
+            .build();
+      }
+      result = manager.requestAudioFocus(audioFocusRequest);
+    } else {
+      result = manager.requestAudioFocus(focusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+    }
+
+    hasAudioFocus = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+    Log.i("app.hayase", "Audio focus requested, granted: " + hasAudioFocus);
+  }
+
+  // Release focus so a paused app lets other apps play again.
+  private void abandonAudioFocus() {
+    if (!hasAudioFocus) {
+      return;
+    }
+    AudioManager manager = getAudioManager();
+    if (manager != null) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && audioFocusRequest != null) {
+        manager.abandonAudioFocusRequest(audioFocusRequest);
+      } else {
+        manager.abandonAudioFocus(focusChangeListener);
+      }
+    }
+    hasAudioFocus = false;
+    Log.i("app.hayase", "Audio focus abandoned");
+  }
+
+  // Pause the player when another app takes focus (a call, navigation or a
+  // media app). A transient loss resumes on AUDIOFOCUS_GAIN. The web player
+  // receives the commands as MediaSession play/pause actions.
+  private void onAudioFocusChange(int focusChange) {
+    switch (focusChange) {
+      case AudioManager.AUDIOFOCUS_LOSS:
+        if (!hasAudioFocus) {
+          break;
+        }
+        hasAudioFocus = false;
+        resumeOnFocusGain = false;
+        notifyListeners("pause", new JSObject());
+        break;
+      case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+        if (!hasAudioFocus) {
+          break;
+        }
+        hasAudioFocus = false;
+        resumeOnFocusGain = true;
+        notifyListeners("pause", new JSObject());
+        break;
+      case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+        // Keep playing. Ducking the Web Audio output is the player's job.
+        break;
+      case AudioManager.AUDIOFOCUS_GAIN:
+        hasAudioFocus = true;
+        if (resumeOnFocusGain) {
+          resumeOnFocusGain = false;
+          notifyListeners("play", new JSObject());
+        }
+        break;
+    }
+  }
+
+  private AudioManager getAudioManager() {
+    if (audioManager == null) {
+      audioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+    }
+    return audioManager;
   }
 
   @PluginMethod
@@ -119,6 +227,20 @@ public class MediaNotificationPlugin extends Plugin {
             new PlaybackStateCompat.CustomAction.Builder("enterpictureinpicture", "pip", R.drawable.ic_pip_icon)
                 .build())
         .build());
+
+    // Only act on a state transition. Periodic position updates repeat the
+    // playing state, and re-requesting focus there would steal it back from the
+    // app that just took it.
+    if (state != lastPlaybackState) {
+      if (state == PlaybackStateCompat.STATE_PLAYING) {
+        requestAudioFocus();
+      } else if (state == PlaybackStateCompat.STATE_PAUSED
+          || state == PlaybackStateCompat.STATE_STOPPED
+          || state == PlaybackStateCompat.STATE_NONE) {
+        abandonAudioFocus();
+      }
+      lastPlaybackState = state;
+    }
   }
 
   private class MediaCallback extends MediaSessionCompat.Callback {
