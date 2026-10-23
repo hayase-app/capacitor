@@ -12,6 +12,31 @@ const nodeJSNativeFolder = join(dirname, 'public', 'nodejs').replaceAll('\\', '/
 
 const isMac = platform === 'darwin'
 
+// The Android nodejs runtime is built without ICU. Unicode property escapes
+// make the bundle fail to parse on the device, so replace them after emit.
+class ReplaceUnicodePropertyRegexPlugin {
+  apply (compiler) {
+    compiler.hooks.thisCompilation.tap('ReplaceUnicodePropertyRegexPlugin', compilation => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'ReplaceUnicodePropertyRegexPlugin',
+          stage: webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE
+        },
+        assets => {
+          for (const [name, asset] of Object.entries(assets)) {
+            if (!name.endsWith('.js')) continue
+            const source = asset.source().toString()
+            const patched = source.replaceAll('/[^\\p{L}\\p{N}\\p{P}\\p{Z}]/gu', '/[^\\w\\s]/g')
+            if (patched !== source) {
+              compilation.updateAsset(name, new webpack.sources.RawSource(patched))
+            }
+          }
+        }
+      )
+    })
+  }
+}
+
 /** @type {import('webpack').Configuration[]} */
 const config = [
   {
@@ -67,6 +92,7 @@ const config = [
       client: false
     },
     plugins: [
+      new ReplaceUnicodePropertyRegexPlugin(),
       new CopyWebpackPlugin({
         patterns: isMac
           ? [

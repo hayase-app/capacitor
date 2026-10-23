@@ -102,10 +102,16 @@ if (!window.native) {
       torrentStreamedDownload: true,
       torrentSpeed: 40,
       maxConns: 50,
-      connectionBudget: 120,
       torrentPort: 0,
+      connectionBudget: 120,
       dhtPort: 0,
-      torrentPeX: false
+      torrentPeX: false,
+      nzbDomain: '',
+      nzbLogin: '',
+      nzbPassword: '',
+      nzbPort: 119,
+      nzbPoolSize: 5,
+      remoteAccess: 'off'
     }
   }
 
@@ -250,7 +256,7 @@ if (!window.native) {
         console.error('Failed to enable CORS proxy', error)
       }
     },
-    isApp: true,
+    isApp: 'mobile',
     version: () => version,
     navigate: async (cb) => {
       App.addListener('appUrlOpen', ({ url }) => {

@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ResultReceiver;
+import android.os.SystemClock;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -46,12 +47,16 @@ public class MediaNotificationPlugin extends Plugin {
   private MediaSessionCompat current = null;
   private String lastUrl = null;
   private Bitmap currentImage = null;
+
   private AudioManager audioManager = null;
   private AudioFocusRequest audioFocusRequest = null;
   private boolean hasAudioFocus = false;
   private boolean resumeOnFocusGain = false;
   private int lastPlaybackState = PlaybackStateCompat.STATE_NONE;
+  private long focusRequestTime = 0;
   private final AudioManager.OnAudioFocusChangeListener focusChangeListener = this::onAudioFocusChange;
+
+  private boolean skipNextFocusRequest = false;
 
   private MediaSessionCompat getSession() {
     if (current == null) {
@@ -82,9 +87,8 @@ public class MediaNotificationPlugin extends Plugin {
     }
   }
 
-  // Take audio focus so Android pauses other apps, the same way a native media
-  // player does. The Web Audio output of the custom player does not request
-  // focus by itself.
+  // Hard transient focus pauses background apps. If a WebView media element
+  // also owns focus, the loop guard skips one request instead of repeating.
   private void requestAudioFocus() {
     if (hasAudioFocus) {
       return;
@@ -115,6 +119,7 @@ public class MediaNotificationPlugin extends Plugin {
     }
 
     hasAudioFocus = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+    focusRequestTime = hasAudioFocus ? SystemClock.elapsedRealtime() : 0;
     Log.i("app.hayase", "Audio focus requested, granted: " + hasAudioFocus);
   }
 
@@ -132,12 +137,13 @@ public class MediaNotificationPlugin extends Plugin {
       }
     }
     hasAudioFocus = false;
+    focusRequestTime = 0;
     Log.i("app.hayase", "Audio focus abandoned");
   }
 
-  // Pause the player when another app takes focus (a call, navigation or a
-  // media app). A transient loss resumes on AUDIOFOCUS_GAIN. The web player
-  // receives the commands as MediaSession play/pause actions.
+  // Pause the player when another app takes focus. A transient loss resumes on
+  // AUDIOFOCUS_GAIN. The web player receives the commands as MediaSession
+  // actions.
   private void onAudioFocusChange(int focusChange) {
     switch (focusChange) {
       case AudioManager.AUDIOFOCUS_LOSS:
@@ -145,7 +151,10 @@ public class MediaNotificationPlugin extends Plugin {
           break;
         }
         hasAudioFocus = false;
+        focusRequestTime = 0;
         resumeOnFocusGain = false;
+        // Another owner took focus. The next play can request focus again.
+        skipNextFocusRequest = false;
         notifyListeners("pause", new JSObject());
         break;
       case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
@@ -153,6 +162,7 @@ public class MediaNotificationPlugin extends Plugin {
           break;
         }
         hasAudioFocus = false;
+        focusRequestTime = 0;
         resumeOnFocusGain = true;
         notifyListeners("pause", new JSObject());
         break;
@@ -161,6 +171,7 @@ public class MediaNotificationPlugin extends Plugin {
         break;
       case AudioManager.AUDIOFOCUS_GAIN:
         hasAudioFocus = true;
+        focusRequestTime = 0;
         if (resumeOnFocusGain) {
           resumeOnFocusGain = false;
           notifyListeners("play", new JSObject());
@@ -228,15 +239,31 @@ public class MediaNotificationPlugin extends Plugin {
                 .build())
         .build());
 
-    // Only act on a state transition. Periodic position updates repeat the
-    // playing state, and re-requesting focus there would steal it back from the
-    // app that just took it.
+    // Act only on a state transition. Periodic position updates repeat the
+    // playing state.
     if (state != lastPlaybackState) {
       if (state == PlaybackStateCompat.STATE_PLAYING) {
-        requestAudioFocus();
-      } else if (state == PlaybackStateCompat.STATE_PAUSED
-          || state == PlaybackStateCompat.STATE_STOPPED
+        // Skip the request that would repeat a detected focus loop.
+        if (skipNextFocusRequest) {
+          skipNextFocusRequest = false;
+          Log.i("app.hayase", "Skipping one focus request to break the loop");
+        } else {
+          requestAudioFocus();
+        }
+      } else if (state == PlaybackStateCompat.STATE_PAUSED) {
+        // A pause right after our focus request is the WebView losing focus
+        // to us and pausing. Skip the next request to break that loop.
+        long now = SystemClock.elapsedRealtime();
+        boolean focusConflict = hasAudioFocus && focusRequestTime != 0
+            && now - focusRequestTime < 150;
+        if (focusConflict) {
+          skipNextFocusRequest = true;
+          Log.i("app.hayase", "Focus conflict, will skip one request");
+        }
+        abandonAudioFocus();
+      } else if (state == PlaybackStateCompat.STATE_STOPPED
           || state == PlaybackStateCompat.STATE_NONE) {
+        skipNextFocusRequest = false;
         abandonAudioFocus();
       }
       lastPlaybackState = state;
