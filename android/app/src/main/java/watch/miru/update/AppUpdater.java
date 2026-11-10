@@ -219,6 +219,9 @@ public final class AppUpdater {
 
       JSONObject files = new JSONObject(jsonBuilder.toString().trim());
 
+      // Prefer the APK for the ABI of the device. Use the universal APK if there is none.
+      ReleaseInfo universal = null;
+      java.util.Map<String, ReleaseInfo> byAbi = new java.util.HashMap<>();
       for (java.util.Iterator<String> it = files.keys(); it.hasNext();) {
         String fileName = it.next();
         if (fileName == null || !fileName.endsWith(".apk")) {
@@ -231,18 +234,51 @@ public final class AppUpdater {
         }
 
         String version = extractVersionFromUrl(fileName);
-        if (version != null) {
-          return new ReleaseInfo(downloadUrl, version);
+        if (version == null) {
+          continue;
+        }
+
+        String abi = abiFromFileName(fileName);
+        if (abi != null) {
+          byAbi.put(abi, new ReleaseInfo(downloadUrl, version));
+        } else if (universal == null) {
+          universal = new ReleaseInfo(downloadUrl, version);
         }
       }
 
-      Log.w(TAG, "No .apk file found in API response");
+      for (String abi : Build.SUPPORTED_ABIS) {
+        ReleaseInfo info = byAbi.get(abi);
+        if (info != null) {
+          return info;
+        }
+      }
+      if (universal != null) {
+        return universal;
+      }
+
+      Log.w(TAG, "No .apk file for this device found in API response");
       return null;
 
     } catch (Exception e) {
       Log.e(TAG, "Failed to fetch release info", e);
       return null;
     }
+  }
+
+  private static final String[] APK_ABIS = { "armeabi-v7a", "arm64-v8a", "x86", "x86_64" };
+
+  /**
+   * Returns the ABI of a split APK name such as android-6.5.6-arm64-v8a.apk,
+   * or null for the universal APK.
+   */
+  @Nullable
+  private static String abiFromFileName(@NonNull String fileName) {
+    for (String abi : APK_ABIS) {
+      if (fileName.endsWith("-" + abi + ".apk")) {
+        return abi;
+      }
+    }
+    return null;
   }
 
   /**
