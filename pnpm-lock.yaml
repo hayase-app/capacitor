@@ -58,7 +58,7 @@ importers:
         version: 0.0.2(@capacitor/core@8.5.3)
       capacitor-nodejs:
         specifier: github:hayase-app/capacitor-nodejs
-        version: git+https://git@github.com:hayase-app/capacitor-nodejs.git#983b317916729161bbfbfec50cdde357b6233913(@capacitor/core@8.5.3)
+        version: git+https://git@github.com:hayase-app/capacitor-nodejs.git#e00e3c14be4b09322bd1bb4ebc7e825237d11045(@capacitor/core@8.5.3)
       concurrently:
         specifier: ^10.0.6
         version: 10.0.6
@@ -94,7 +94,7 @@ importers:
         version: 4.1.5
       torrent-client:
         specifier: github:hayase-app/torrent-client
-        version: https://codeload.github.com/hayase-app/torrent-client/tar.gz/cdd25f799f383aa7b9631de6365012280b56740d(bare-url@2.5.4)
+        version: https://codeload.github.com/hayase-app/torrent-client/tar.gz/05774bbb0379f8f1c503a86e9fdc663cff26b719(bare-url@2.5.4)
       ts-loader:
         specifier: ^9.6.2
         version: 9.6.2(typescript@6.0.3)(webpack@5.107.2)
@@ -1305,8 +1305,8 @@ packages:
     peerDependencies:
       '@capacitor/core': ^6.0.0
 
-  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#983b317916729161bbfbfec50cdde357b6233913:
-    resolution: {commit: 983b317916729161bbfbfec50cdde357b6233913, repo: git@github.com:hayase-app/capacitor-nodejs.git, type: git}
+  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#e00e3c14be4b09322bd1bb4ebc7e825237d11045:
+    resolution: {commit: e00e3c14be4b09322bd1bb4ebc7e825237d11045, repo: git@github.com:hayase-app/capacitor-nodejs.git, type: git}
     version: 2.2.0
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
@@ -4545,8 +4545,8 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
 
-  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/cdd25f799f383aa7b9631de6365012280b56740d:
-    resolution: {tarball: https://codeload.github.com/hayase-app/torrent-client/tar.gz/cdd25f799f383aa7b9631de6365012280b56740d}
+  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/05774bbb0379f8f1c503a86e9fdc663cff26b719:
+    resolution: {tarball: https://codeload.github.com/hayase-app/torrent-client/tar.gz/05774bbb0379f8f1c503a86e9fdc663cff26b719}
     version: 1.0.0
 
   torrent-discovery@11.0.21:
@@ -6705,7 +6705,7 @@ snapshots:
     dependencies:
       '@capacitor/core': 8.5.3
 
-  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#983b317916729161bbfbfec50cdde357b6233913(@capacitor/core@8.5.3):
+  capacitor-nodejs@git+https://git@github.com:hayase-app/capacitor-nodejs.git#e00e3c14be4b09322bd1bb4ebc7e825237d11045(@capacitor/core@8.5.3):
     dependencies:
       '@capacitor/core': 8.5.3
 
@@ -10374,7 +10374,7 @@ snapshots:
 
   toidentifier@1.0.1: {}
 
-  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/cdd25f799f383aa7b9631de6365012280b56740d(bare-url@2.5.4):
+  torrent-client@https://codeload.github.com/hayase-app/torrent-client/tar.gz/05774bbb0379f8f1c503a86e9fdc663cff26b719(bare-url@2.5.4):
     dependencies:
       '@silentbot1/nat-api': 0.4.9
       '@stacksjs/tlsx': 0.13.19
