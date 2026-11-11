@@ -45,6 +45,29 @@ public final class AppUpdater {
     // Run download in background thread
     new Thread(() -> {
       try {
+        // Get current app version
+        String currentVersion = getCurrentAppVersion(appContext);
+        if (currentVersion == null) {
+          Log.w(TAG, "Could not get current app version");
+          return;
+        }
+
+        File destinationDir = appContext.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        if (destinationDir == null) {
+          Log.e(TAG, "Unable to access external files directory for downloads");
+          return;
+        }
+
+        File apkFile = new File(destinationDir, APK_FILE_NAME);
+        File partFile = new File(destinationDir, APK_FILE_NAME + ".part");
+
+        // Delete a downloaded APK that is installed, older or not complete.
+        String downloadedVersion = getApkVersion(appContext, apkFile);
+        if (apkFile.exists() && (downloadedVersion == null || !isNewerVersion(currentVersion, downloadedVersion))) {
+          deleteFile(apkFile);
+          downloadedVersion = null;
+        }
+
         if (TextUtils.isEmpty(apiurl)) {
           Log.w(TAG, "downloadAndInstallApk: URL is empty");
           return;
@@ -60,13 +83,6 @@ public final class AppUpdater {
 
         Log.i(TAG, "Found APK: " + releaseInfo.apkUrl + " (version: " + releaseInfo.version + ")");
 
-        // Get current app version
-        String currentVersion = getCurrentAppVersion(appContext);
-        if (currentVersion == null) {
-          Log.w(TAG, "Could not get current app version");
-          return;
-        }
-
         // Compare versions
         if (!isNewerVersion(currentVersion, releaseInfo.version)) {
           Log.i(TAG, "Update version " + releaseInfo.version + " is not newer than current version " + currentVersion);
@@ -75,18 +91,15 @@ public final class AppUpdater {
 
         Log.i(TAG, "Newer version found: " + releaseInfo.version + " (current: " + currentVersion + ")");
 
-        File destinationDir = appContext.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
-        if (destinationDir == null) {
-          Log.e(TAG, "Unable to access external files directory for downloads");
+        // The user did not install this update yet. Use the APK again, do not download it again.
+        if (releaseInfo.version.equals(downloadedVersion)) {
+          Log.i(TAG, "Update " + downloadedVersion + " is already downloaded");
+          installApk(appContext, apkFile);
           return;
         }
 
-        File apkFile = new File(destinationDir, APK_FILE_NAME);
-
-        // Delete existing file
-        if (apkFile.exists() && !apkFile.delete()) {
-          Log.w(TAG, "Existing update file could not be deleted");
-        }
+        deleteFile(apkFile);
+        deleteFile(partFile);
 
         // Download the APK
         Log.i(TAG, "Starting download from: " + releaseInfo.apkUrl);
@@ -103,9 +116,9 @@ public final class AppUpdater {
           return;
         }
 
-        // Download file
+        // Download to a .part file, so that a download that stops is not used as a complete APK.
         try (InputStream input = connection.getInputStream();
-            FileOutputStream output = new FileOutputStream(apkFile)) {
+            FileOutputStream output = new FileOutputStream(partFile)) {
 
           byte[] buffer = new byte[8192];
           int bytesRead;
@@ -120,6 +133,12 @@ public final class AppUpdater {
         }
 
         connection.disconnect();
+
+        if (!partFile.renameTo(apkFile)) {
+          Log.e(TAG, "Could not move the downloaded APK into place");
+          showToast(appContext, "Update download failed");
+          return;
+        }
 
         // Verify file exists and has content
         if (!apkFile.exists() || apkFile.length() == 0) {
@@ -151,6 +170,24 @@ public final class AppUpdater {
         showToast(appContext, "Update failed");
       }
     }).start();
+  }
+
+  /**
+   * Returns the versionName of a downloaded APK, or null if the file is missing or not a complete APK.
+   */
+  @Nullable
+  private static String getApkVersion(@NonNull Context context, @NonNull File apkFile) {
+    if (!apkFile.exists()) {
+      return null;
+    }
+    PackageInfo info = context.getPackageManager().getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
+    return info != null ? info.versionName : null;
+  }
+
+  private static void deleteFile(@NonNull File file) {
+    if (file.exists() && !file.delete()) {
+      Log.w(TAG, "Could not delete " + file.getName());
+    }
   }
 
   private static void installApk(@NonNull Context context, @NonNull File apkFile) {

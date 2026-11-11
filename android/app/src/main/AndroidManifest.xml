@@ -68,9 +68,11 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- Engage is disabled, see build.gradle.
         <meta-data
             android:name="com.google.android.engage.service.ENV"
             android:value="PRODUCTION" />
+        -->
         <receiver
             android:name="io.capawesome.capacitorjs.plugins.foregroundservice.NotificationActionBroadcastReceiver" />
         <service
