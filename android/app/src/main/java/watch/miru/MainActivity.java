@@ -34,6 +34,8 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.JSArray;
+import androidx.browser.customtabs.CustomTabsClient;
+import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -64,6 +66,7 @@ public class MainActivity extends BridgeActivity {
   protected RequestQueue queue = null;
 
   private static final int FILE_CHOOSER_REQUEST_CODE = 61453;
+  private static final int CUSTOM_TAB_REQUEST_CODE = 61454;
   private ValueCallback<Uri[]> filePathCallback;
   private boolean isFullscreen = false;
 
@@ -478,6 +481,33 @@ public class MainActivity extends BridgeActivity {
 
       @Override
       public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
+        // The system browser has the cookies and the saved passwords of the user.
+        String customTabsPackage = CustomTabsClient.getPackageName(MainActivity.this, null);
+        if (customTabsPackage != null) {
+          // onCreateWindow does not supply the URL. This WebView receives the first navigation.
+          WebView urlCaptureWebView = new WebView(MainActivity.this);
+          urlCaptureWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView captureView, WebResourceRequest request) {
+              int sheetHeight = (int) (getResources().getDisplayMetrics().heightPixels * 0.85);
+              CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder()
+                  .setInitialActivityHeightPx(sheetHeight)
+                  .setToolbarCornerRadiusDp(16)
+                  .setUrlBarHidingEnabled(true)
+                  .build();
+              customTabsIntent.intent.setPackage(customTabsPackage);
+              customTabsIntent.intent.setData(request.getUrl());
+              // A browser shows a partial-height tab only for startActivityForResult or a session.
+              startActivityForResult(customTabsIntent.intent, CUSTOM_TAB_REQUEST_CODE);
+              view.post(captureView::destroy);
+              return true;
+            }
+          });
+          ((WebView.WebViewTransport) resultMsg.obj).setWebView(urlCaptureWebView);
+          resultMsg.sendToTarget();
+          return true;
+        }
+
         WebView popupWebView = new WebView(MainActivity.this);
         WebSettings webSettings = popupWebView.getSettings();
 
@@ -490,6 +520,18 @@ public class MainActivity extends BridgeActivity {
         // IMPORTANT
         popupWebView.setWebChromeClient(this);
         popupWebView.setWebViewClient(new WebViewClient() {
+          @Override
+          public boolean shouldOverrideUrlLoading(WebView popupView, WebResourceRequest request) {
+            Uri uri = request.getUrl();
+            if (!"hayase".equals(uri.getScheme())) return false;
+
+            // Use the same path as a redirect from the system browser.
+            MainActivity.this.onNewIntent(new Intent(Intent.ACTION_VIEW, uri));
+            Dialog dialog = popupDialogs.get(popupView);
+            if (dialog != null) dialog.dismiss();
+            return true;
+          }
+
           @Override
           public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -513,8 +555,7 @@ public class MainActivity extends BridgeActivity {
         if (window != null) {
           android.util.DisplayMetrics metrics = getResources().getDisplayMetrics();
           int width = (int) (metrics.widthPixels - 30);
-          int height = (int) (metrics.heightPixels - 30);
-          window.setLayout(width, height);
+          window.setLayout(width, ViewGroup.LayoutParams.MATCH_PARENT);
         }
 
         popupDialogs.put(popupWebView, dialog);
