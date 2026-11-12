@@ -19,7 +19,6 @@ import android.view.WindowInsetsController;
 import android.webkit.WebChromeClient;
 import android.webkit.DownloadListener;
 import android.webkit.ValueCallback;
-import android.annotation.TargetApi;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -51,7 +50,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import java.net.HttpURLConnection;
@@ -69,6 +67,9 @@ public class MainActivity extends BridgeActivity {
   private static final int CUSTOM_TAB_REQUEST_CODE = 61454;
   private ValueCallback<Uri[]> filePathCallback;
   private boolean isFullscreen = false;
+
+  private static final long RENDER_PROCESS_RESTART_INTERVAL_MS = 30000;
+  private static long lastRenderProcessGoneTime = 0;
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -130,11 +131,34 @@ public class MainActivity extends BridgeActivity {
       m.setAccessible(true);
       m.invoke(implementation, "EVENT_CHANNEL", "destroy", new JSArray());
       Log.i("Destroy", "Sent destroy message to NodeJS");
-    } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+    } catch (Exception e) {
       Log.e("Destroy", "Failed to send destroy message to NodeJS", e);
     }
 
+    if (queue != null) {
+      queue.stop();
+    }
+
     super.onDestroy();
+  }
+
+  private static boolean isAppUrl(String url) {
+    if (url == null) {
+      return false;
+    }
+    Uri uri = Uri.parse(url);
+    String host = uri.getHost();
+    return ("https".equals(uri.getScheme()) && "hayase.app".equals(host))
+        || ("http".equals(uri.getScheme()) && "localhost".equals(host));
+  }
+
+  private static String getHeaderIgnoreCase(Map<String, String> headers, String name) {
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      if (name.equalsIgnoreCase(entry.getKey())) {
+        return entry.getValue();
+      }
+    }
+    return null;
   }
 
   @Override
@@ -171,9 +195,7 @@ public class MainActivity extends BridgeActivity {
     startNodeEngineWithCustomArgs();
 
     try {
-      if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-        WebView.setWebContentsDebuggingEnabled(true);
-      }
+      WebView.setWebContentsDebuggingEnabled(true);
       // Attempt to set command line flags (may not work on all devices/versions, if
       // at all)
       String commandLine = "--enable-blink-features=AudioVideoTracks --enable-experimental-web-platform-features";
@@ -247,11 +269,22 @@ public class MainActivity extends BridgeActivity {
     }
 
     webView.setWebViewClient(new WebViewClient() {
+      // onPageFinished also runs for a load that failed.
+      private boolean appLoadFailed = false;
+
+      @Override
+      public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+        super.onPageStarted(view, url, favicon);
+        if (isAppUrl(url)) {
+          appLoadFailed = false;
+        }
+      }
+
       @Override
       public void onPageFinished(WebView view, String url) {
         // Only inject JavaScript for allowed URLs.
         super.onPageFinished(view, url);
-        if (url != null && (url.startsWith("https://hayase.app") || url.startsWith("http://localhost"))) {
+        if (isAppUrl(url) && !appLoadFailed) {
           injectJavaScript(view);
           configureSystemBars();
           getSharedPreferences("hayase", MODE_PRIVATE).edit().putBoolean("sw_installed", true).apply();
@@ -283,17 +316,27 @@ public class MainActivity extends BridgeActivity {
           return super.shouldInterceptRequest(view, request);
         }
 
-        Map<String, String> responseHeaders = new HashMap<>();
-        responseHeaders.put("Access-Control-Allow-Origin", "*");
-        responseHeaders.put("Cache-Control", "public, max-age=86400");
-        responseHeaders.put("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
-        responseHeaders.put("access-control-max-age", "86400");
-        responseHeaders.put("Access-Control-Allow-Headers", "*");
-        responseHeaders.put("Access-Control-Allow-Credentials", "true");
+        Map<String, String> requestHeaders = request.getRequestHeaders();
+
+        // A request with credentials does not accept a wildcard, so use the values of the request.
+        Map<String, String> corsHeaders = new HashMap<>();
+        String origin = getHeaderIgnoreCase(requestHeaders, "Origin");
+        if (origin != null) {
+          corsHeaders.put("Access-Control-Allow-Origin", origin);
+          corsHeaders.put("Access-Control-Allow-Credentials", "true");
+          corsHeaders.put("Vary", "Origin");
+        } else {
+          corsHeaders.put("Access-Control-Allow-Origin", "*");
+        }
+        String requestedHeaders = getHeaderIgnoreCase(requestHeaders, "Access-Control-Request-Headers");
+        corsHeaders.put("Access-Control-Allow-Headers", requestedHeaders != null ? requestedHeaders : "*");
+        corsHeaders.put("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
+        corsHeaders.put("Access-Control-Max-Age", "86400");
 
         // Override MAL and custom CORS preflight requests
         if (isOptions) {
-          return new WebResourceResponse("application/json", "UTF-8", 200, "OK", responseHeaders, null);
+          corsHeaders.put("Cache-Control", "public, max-age=86400");
+          return new WebResourceResponse("application/json", "UTF-8", 200, "OK", corsHeaders, null);
         }
 
         // Rewrite MAL and custom CORS responses
@@ -308,7 +351,7 @@ public class MainActivity extends BridgeActivity {
           // request object... bruh
           if ("POST".equals(request.getMethod()) || "PATCH".equals(request.getMethod())) {
             java.net.URI uri = new java.net.URI(originalUrl);
-            String query = uri.getQuery();
+            String query = uri.getRawQuery();
 
             if (query != null && !query.isEmpty()) {
               // Remove query parameters from URL for the actual request
@@ -325,9 +368,14 @@ public class MainActivity extends BridgeActivity {
           }
 
           connection = (HttpURLConnection) url.openConnection();
+          connection.setConnectTimeout(15000);
+          connection.setReadTimeout(30000);
 
-          Map<String, String> requestHeaders = request.getRequestHeaders();
           for (Map.Entry<String, String> entry : requestHeaders.entrySet()) {
+            // Without this header, the connection decompresses the response itself.
+            if ("Accept-Encoding".equalsIgnoreCase(entry.getKey())) {
+              continue;
+            }
             connection.setRequestProperty(entry.getKey(), entry.getValue());
           }
 
@@ -346,7 +394,16 @@ public class MainActivity extends BridgeActivity {
           }
 
           int statusCode = connection.getResponseCode();
+          if (statusCode < 100 || (statusCode >= 300 && statusCode < 400)) {
+            connection.disconnect();
+            return super.shouldInterceptRequest(view, request);
+          }
+
           String reasonPhrase = connection.getResponseMessage();
+          if (reasonPhrase == null || reasonPhrase.isEmpty()) {
+            reasonPhrase = "Unknown";
+          }
+
           String mimeType = connection.getContentType();
           String encoding = connection.getContentEncoding();
 
@@ -362,15 +419,19 @@ public class MainActivity extends BridgeActivity {
             }
           }
 
+          // Header names have no fixed case. The CORS headers must replace the headers of the server.
+          Map<String, String> responseHeaders = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+          responseHeaders.put("Cache-Control", "public, max-age=86400");
           Map<String, List<String>> headerFields = connection.getHeaderFields();
           for (Map.Entry<String, List<String>> entry : headerFields.entrySet()) {
             if (entry.getKey() != null) {
               responseHeaders.put(entry.getKey(), String.join(", ", entry.getValue()));
             }
           }
+          responseHeaders.putAll(corsHeaders);
 
           return new WebResourceResponse(
-              mimeType != null ? mimeType : "application/json",
+              mimeType != null && !mimeType.isEmpty() ? mimeType : "application/json",
               encoding != null ? encoding : "UTF-8",
               statusCode,
               reasonPhrase,
@@ -397,8 +458,9 @@ public class MainActivity extends BridgeActivity {
       }
 
       @Override
-      public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-        if (failingUrl != null && (failingUrl.startsWith("https://hayase.app") || failingUrl.startsWith("http://localhost"))) {
+      public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+        if (request.isForMainFrame() && isAppUrl(request.getUrl().toString())) {
+          appLoadFailed = true;
           SharedPreferences prefs = getSharedPreferences("hayase", MODE_PRIVATE);
           if (!prefs.getBoolean("sw_installed", false)) {
             showErrorPage(view);
@@ -407,27 +469,20 @@ public class MainActivity extends BridgeActivity {
       }
 
       @Override
-      @TargetApi(android.os.Build.VERSION_CODES.M)
-      public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-        if (request.isForMainFrame()) {
-          String url = request.getUrl().toString();
-          if (url != null && (url.startsWith("https://hayase.app") || url.startsWith("http://localhost"))) {
-            SharedPreferences prefs = getSharedPreferences("hayase", MODE_PRIVATE);
-            if (!prefs.getBoolean("sw_installed", false)) {
-              showErrorPage(view);
-            }
-          }
-        }
-      }
-
-      @Override
       public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-          Log.e("WebView", "Render process gone for " + view.getUrl() + ". Did it crash? " + detail.didCrash());
-        }
+        Log.e("WebView", "Render process gone for " + view.getUrl() + ". Did it crash? " + detail.didCrash());
 
-        if (view != null) {
-          view.reload();
+        // A WebView without a render process cannot be used again, so make a new activity.
+        long now = android.os.SystemClock.elapsedRealtime();
+        boolean isRepeatedCrash = lastRenderProcessGoneTime != 0
+            && now - lastRenderProcessGoneTime < RENDER_PROCESS_RESTART_INTERVAL_MS;
+        lastRenderProcessGoneTime = now;
+
+        if (isRepeatedCrash) {
+          Toast.makeText(MainActivity.this, "Hayase stopped because the WebView failed again", Toast.LENGTH_LONG).show();
+          finish();
+        } else {
+          recreate();
         }
 
         return true; // Prevent the app from crashing
@@ -534,9 +589,7 @@ public class MainActivity extends BridgeActivity {
 
           @Override
           public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-              Log.e("WebViewPopup", "Render process gone. Did it crash? " + detail.didCrash());
-            }
+            Log.e("WebViewPopup", "Render process gone. Did it crash? " + detail.didCrash());
 
             Dialog dialog = popupDialogs.get(view);
             if (dialog != null) {
